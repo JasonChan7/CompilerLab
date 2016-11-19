@@ -1,0 +1,16 @@
+const a=25, b=7;
+var q,r;
+procedure divide;
+begin
+q:=0;
+while r>=b do
+  begin
+    r:=r-b; q:=q+1; 
+  end;
+write(q);
+end;
+
+
+begin
+r:=a; call divide;
+end.

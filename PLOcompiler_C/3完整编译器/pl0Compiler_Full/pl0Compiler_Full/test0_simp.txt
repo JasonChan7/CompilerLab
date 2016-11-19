@@ -1,0 +1,24 @@
+const A=1,b=2;
+var x,y;
+
+procedure test;
+const A=99,b=100;
+var x,y;
+begin
+ write(A);
+ write(b);
+ x:=99;
+ y:=100;
+ write(x);
+ write(y)
+end;
+
+begin
+ call test;
+ write(a);
+ write(b);
+ x:=1;
+ y:=2;
+ write(x);
+ write(y)
+end.

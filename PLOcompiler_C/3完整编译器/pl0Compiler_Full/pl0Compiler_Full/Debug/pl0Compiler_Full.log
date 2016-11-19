@@ -1,0 +1,94 @@
+﻿Build started 2016-08-09 16:05:12.
+     1>Project "E:\Teach\《编译原理实践》\课程\上机例程\2016分阶段版本\C版本\3完整编译器\pl0Compiler_Full\pl0Compiler_Full\pl0Compiler_Full.vcxproj" on node 2 (build target(s)).
+     1>InitializeBuildStatus:
+         Creating "Debug\pl0Compiler_Full.unsuccessfulbuild" because "AlwaysCreate" was specified.
+       ClCompile:
+         d:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _DEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc100.pdb" /Gd /TC /analyze- /errorReport:prompt pl0Full.c
+         pl0Full.c
+     1>e:\teach\《编译原理实践》\课程\上机例程\2016分阶段版本\c版本\3完整编译器\pl0compiler_full\pl0compiler_full\pl0full.c(142): warning C4996: 'scanf': This function or variable may be unsafe. Consider using scanf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 d:\program files (x86)\microsoft visual studio 10.0\vc\include\stdio.h(304) : see declaration of 'scanf'
+     1>e:\teach\《编译原理实践》\课程\上机例程\2016分阶段版本\c版本\3完整编译器\pl0compiler_full\pl0compiler_full\pl0full.c(144): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 d:\program files (x86)\microsoft visual studio 10.0\vc\include\stdio.h(234) : see declaration of 'fopen'
+     1>e:\teach\《编译原理实践》\课程\上机例程\2016分阶段版本\c版本\3完整编译器\pl0compiler_full\pl0compiler_full\pl0full.c(159): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 d:\program files (x86)\microsoft visual studio 10.0\vc\include\stdio.h(234) : see declaration of 'fopen'
+     1>e:\teach\《编译原理实践》\课程\上机例程\2016分阶段版本\c版本\3完整编译器\pl0compiler_full\pl0compiler_full\pl0full.c(165): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 d:\program files (x86)\microsoft visual studio 10.0\vc\include\stdio.h(234) : see declaration of 'fopen'
+     1>e:\teach\《编译原理实践》\课程\上机例程\2016分阶段版本\c版本\3完整编译器\pl0compiler_full\pl0compiler_full\pl0full.c(172): warning C4996: 'scanf': This function or variable may be unsafe. Consider using scanf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 d:\program files (x86)\microsoft visual studio 10.0\vc\include\stdio.h(304) : see declaration of 'scanf'
+     1>e:\teach\《编译原理实践》\课程\上机例程\2016分阶段版本\c版本\3完整编译器\pl0compiler_full\pl0compiler_full\pl0full.c(176): warning C4996: 'scanf': This function or variable may be unsafe. Consider using scanf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 d:\program files (x86)\microsoft visual studio 10.0\vc\include\stdio.h(304) : see declaration of 'scanf'
+     1>e:\teach\《编译原理实践》\课程\上机例程\2016分阶段版本\c版本\3完整编译器\pl0compiler_full\pl0compiler_full\pl0full.c(200): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 d:\program files (x86)\microsoft visual studio 10.0\vc\include\stdio.h(234) : see declaration of 'fopen'
+     1>e:\teach\《编译原理实践》\课程\上机例程\2016分阶段版本\c版本\3完整编译器\pl0compiler_full\pl0compiler_full\pl0full.c(206): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 d:\program files (x86)\microsoft visual studio 10.0\vc\include\stdio.h(234) : see declaration of 'fopen'
+     1>e:\teach\《编译原理实践》\课程\上机例程\2016分阶段版本\c版本\3完整编译器\pl0compiler_full\pl0compiler_full\pl0full.c(256): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 d:\program files (x86)\microsoft visual studio 10.0\vc\include\string.h(105) : see declaration of 'strcpy'
+     1>e:\teach\《编译原理实践》\课程\上机例程\2016分阶段版本\c版本\3完整编译器\pl0compiler_full\pl0compiler_full\pl0full.c(257): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 d:\program files (x86)\microsoft visual studio 10.0\vc\include\string.h(105) : see declaration of 'strcpy'
+     1>e:\teach\《编译原理实践》\课程\上机例程\2016分阶段版本\c版本\3完整编译器\pl0compiler_full\pl0compiler_full\pl0full.c(258): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 d:\program files (x86)\microsoft visual studio 10.0\vc\include\string.h(105) : see declaration of 'strcpy'
+     1>e:\teach\《编译原理实践》\课程\上机例程\2016分阶段版本\c版本\3完整编译器\pl0compiler_full\pl0compiler_full\pl0full.c(259): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 d:\program files (x86)\microsoft visual studio 10.0\vc\include\string.h(105) : see declaration of 'strcpy'
+     1>e:\teach\《编译原理实践》\课程\上机例程\2016分阶段版本\c版本\3完整编译器\pl0compiler_full\pl0compiler_full\pl0full.c(260): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 d:\program files (x86)\microsoft visual studio 10.0\vc\include\string.h(105) : see declaration of 'strcpy'
+     1>e:\teach\《编译原理实践》\课程\上机例程\2016分阶段版本\c版本\3完整编译器\pl0compiler_full\pl0compiler_full\pl0full.c(261): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 d:\program files (x86)\microsoft visual studio 10.0\vc\include\string.h(105) : see declaration of 'strcpy'
+     1>e:\teach\《编译原理实践》\课程\上机例程\2016分阶段版本\c版本\3完整编译器\pl0compiler_full\pl0compiler_full\pl0full.c(262): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 d:\program files (x86)\microsoft visual studio 10.0\vc\include\string.h(105) : see declaration of 'strcpy'
+     1>e:\teach\《编译原理实践》\课程\上机例程\2016分阶段版本\c版本\3完整编译器\pl0compiler_full\pl0compiler_full\pl0full.c(263): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 d:\program files (x86)\microsoft visual studio 10.0\vc\include\string.h(105) : see declaration of 'strcpy'
+     1>e:\teach\《编译原理实践》\课程\上机例程\2016分阶段版本\c版本\3完整编译器\pl0compiler_full\pl0compiler_full\pl0full.c(264): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 d:\program files (x86)\microsoft visual studio 10.0\vc\include\string.h(105) : see declaration of 'strcpy'
+     1>e:\teach\《编译原理实践》\课程\上机例程\2016分阶段版本\c版本\3完整编译器\pl0compiler_full\pl0compiler_full\pl0full.c(265): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 d:\program files (x86)\microsoft visual studio 10.0\vc\include\string.h(105) : see declaration of 'strcpy'
+     1>e:\teach\《编译原理实践》\课程\上机例程\2016分阶段版本\c版本\3完整编译器\pl0compiler_full\pl0compiler_full\pl0full.c(266): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 d:\program files (x86)\microsoft visual studio 10.0\vc\include\string.h(105) : see declaration of 'strcpy'
+     1>e:\teach\《编译原理实践》\课程\上机例程\2016分阶段版本\c版本\3完整编译器\pl0compiler_full\pl0compiler_full\pl0full.c(267): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 d:\program files (x86)\microsoft visual studio 10.0\vc\include\string.h(105) : see declaration of 'strcpy'
+     1>e:\teach\《编译原理实践》\课程\上机例程\2016分阶段版本\c版本\3完整编译器\pl0compiler_full\pl0compiler_full\pl0full.c(268): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 d:\program files (x86)\microsoft visual studio 10.0\vc\include\string.h(105) : see declaration of 'strcpy'
+     1>e:\teach\《编译原理实践》\课程\上机例程\2016分阶段版本\c版本\3完整编译器\pl0compiler_full\pl0compiler_full\pl0full.c(286): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 d:\program files (x86)\microsoft visual studio 10.0\vc\include\string.h(105) : see declaration of 'strcpy'
+     1>e:\teach\《编译原理实践》\课程\上机例程\2016分阶段版本\c版本\3完整编译器\pl0compiler_full\pl0compiler_full\pl0full.c(287): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 d:\program files (x86)\microsoft visual studio 10.0\vc\include\string.h(105) : see declaration of 'strcpy'
+     1>e:\teach\《编译原理实践》\课程\上机例程\2016分阶段版本\c版本\3完整编译器\pl0compiler_full\pl0compiler_full\pl0full.c(288): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 d:\program files (x86)\microsoft visual studio 10.0\vc\include\string.h(105) : see declaration of 'strcpy'
+     1>e:\teach\《编译原理实践》\课程\上机例程\2016分阶段版本\c版本\3完整编译器\pl0compiler_full\pl0compiler_full\pl0full.c(289): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 d:\program files (x86)\microsoft visual studio 10.0\vc\include\string.h(105) : see declaration of 'strcpy'
+     1>e:\teach\《编译原理实践》\课程\上机例程\2016分阶段版本\c版本\3完整编译器\pl0compiler_full\pl0compiler_full\pl0full.c(290): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 d:\program files (x86)\microsoft visual studio 10.0\vc\include\string.h(105) : see declaration of 'strcpy'
+     1>e:\teach\《编译原理实践》\课程\上机例程\2016分阶段版本\c版本\3完整编译器\pl0compiler_full\pl0compiler_full\pl0full.c(291): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 d:\program files (x86)\microsoft visual studio 10.0\vc\include\string.h(105) : see declaration of 'strcpy'
+     1>e:\teach\《编译原理实践》\课程\上机例程\2016分阶段版本\c版本\3完整编译器\pl0compiler_full\pl0compiler_full\pl0full.c(292): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 d:\program files (x86)\microsoft visual studio 10.0\vc\include\string.h(105) : see declaration of 'strcpy'
+     1>e:\teach\《编译原理实践》\课程\上机例程\2016分阶段版本\c版本\3完整编译器\pl0compiler_full\pl0compiler_full\pl0full.c(293): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 d:\program files (x86)\microsoft visual studio 10.0\vc\include\string.h(105) : see declaration of 'strcpy'
+     1>e:\teach\《编译原理实践》\课程\上机例程\2016分阶段版本\c版本\3完整编译器\pl0compiler_full\pl0compiler_full\pl0full.c(399): warning C4996: 'fscanf': This function or variable may be unsafe. Consider using fscanf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 d:\program files (x86)\microsoft visual studio 10.0\vc\include\stdio.h(253) : see declaration of 'fscanf'
+     1>e:\teach\《编译原理实践》\课程\上机例程\2016分阶段版本\c版本\3完整编译器\pl0compiler_full\pl0compiler_full\pl0full.c(438): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 d:\program files (x86)\microsoft visual studio 10.0\vc\include\string.h(105) : see declaration of 'strcpy'
+     1>e:\teach\《编译原理实践》\课程\上机例程\2016分阶段版本\c版本\3完整编译器\pl0compiler_full\pl0compiler_full\pl0full.c(767): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 d:\program files (x86)\microsoft visual studio 10.0\vc\include\string.h(105) : see declaration of 'strcpy'
+     1>e:\teach\《编译原理实践》\课程\上机例程\2016分阶段版本\c版本\3完整编译器\pl0compiler_full\pl0compiler_full\pl0full.c(800): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 d:\program files (x86)\microsoft visual studio 10.0\vc\include\string.h(105) : see declaration of 'strcpy'
+     1>e:\teach\《编译原理实践》\课程\上机例程\2016分阶段版本\c版本\3完整编译器\pl0compiler_full\pl0compiler_full\pl0full.c(1427): warning C4996: 'scanf': This function or variable may be unsafe. Consider using scanf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 d:\program files (x86)\microsoft visual studio 10.0\vc\include\stdio.h(304) : see declaration of 'scanf'
+       ManifestResourceCompile:
+         All outputs are up-to-date.
+       Link:
+         d:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"E:\Teach\《编译原理实践》\课程\上机例程\2016分阶段版本\C版本\3完整编译器\pl0Compiler_Full\Debug\pl0Compiler_Full.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /ManifestFile:"Debug\pl0Compiler_Full.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"E:\Teach\《编译原理实践》\课程\上机例程\2016分阶段版本\C版本\3完整编译器\pl0Compiler_Full\Debug\pl0Compiler_Full.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"E:\Teach\《编译原理实践》\课程\上机例程\2016分阶段版本\C版本\3完整编译器\pl0Compiler_Full\Debug\pl0Compiler_Full.lib" /MACHINE:X86 Debug\pl0Compiler_Full.exe.embed.manifest.res
+         Debug\pl0Full.obj
+       Manifest:
+         C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\mt.exe /nologo /verbose /out:"Debug\pl0Compiler_Full.exe.embed.manifest" /manifest Debug\pl0Compiler_Full.exe.intermediate.manifest
+         All outputs are up-to-date.
+       LinkEmbedManifest:
+         All outputs are up-to-date.
+         pl0Compiler_Full.vcxproj -> E:\Teach\《编译原理实践》\课程\上机例程\2016分阶段版本\C版本\3完整编译器\pl0Compiler_Full\Debug\pl0Compiler_Full.exe
+       FinalizeBuildStatus:
+         Deleting file "Debug\pl0Compiler_Full.unsuccessfulbuild".
+         Touching "Debug\pl0Compiler_Full.lastbuildstate".
+     1>Done Building Project "E:\Teach\《编译原理实践》\课程\上机例程\2016分阶段版本\C版本\3完整编译器\pl0Compiler_Full\pl0Compiler_Full\pl0Compiler_Full.vcxproj" (build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:03.34

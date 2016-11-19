@@ -1,0 +1,16 @@
+var m, sum;
+procedure psum;
+begin
+if m>0 then
+ begin
+  sum:=sum+m;
+  m:=m-1;
+  call psum
+ end;
+end;
+begin
+  m:=100;
+  sum:=0;
+  call psum;
+  write(sum)
+end.

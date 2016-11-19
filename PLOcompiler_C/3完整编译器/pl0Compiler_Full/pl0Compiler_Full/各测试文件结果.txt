@@ -1,0 +1,714 @@
+c”Ô—‘∞ÊÕÍ’˚±‡“Î∆˜
+test0_simpl
+0 jmp 0 20
+1 jmp 0 2
+2 int 0 5
+3 lit 0 99
+4 opr 0 14
+5 opr 0 15
+6 lit 0 100
+7 opr 0 14
+8 opr 0 15
+9 lit 0 99
+10 sto 0 3
+11 lit 0 100
+12 sto 0 4
+13 lod 0 3
+14 opr 0 14
+15 opr 0 15
+16 lod 0 4
+17 opr 0 14
+18 opr 0 15
+19 opr 0 0
+20 int 0 5
+21 cal 0 2
+22 lit 0 1
+23 opr 0 14
+24 opr 0 15
+25 lit 0 2
+26 opr 0 14
+27 opr 0 15
+28 lit 0 1
+29 sto 0 3
+30 lit 0 2
+31 sto 0 4
+32 lod 0 3
+33 opr 0 14
+34 opr 0 15
+35 lod 0 4
+36 opr 0 14
+37 opr 0 15
+38 opr 0 0
+
+
+    1 const a val=1
+    2 const b val=2
+    3 var   x lev=0 addr=3
+    4 var   y lev=0 addr=4
+    5 proc  test lev=0 addr=2 size=5
+    6 const a val=99
+    7 const b val=100
+    8 var   x lev=1 addr=3
+    9 var   y lev=1 addr=4
+
+    1 const a val=1
+    2 const b val=2
+    3 var   x lev=0 addr=3
+    4 var   y lev=0 addr=4
+    5 proc  test lev=0 addr=2 size=5
+
+Start pl0
+99
+100
+99
+100
+1
+2
+1
+2
+End pl0
+===================================
+
+test1_while:
+0 jmp 0 8
+1 jmp 0 2
+2 int 0 3
+3 lod 1 3
+4 lit 0 10
+5 opr 0 2
+6 sto 1 4
+7 opr 0 0
+8 int 0 5
+9 opr 0 16
+10 sto 0 3
+11 lod 0 3
+12 lit 0 0
+13 opr 0 9
+14 jpc 0 24
+15 cal 0 2
+16 lit 0 2
+17 lod 0 4
+18 opr 0 4
+19 opr 0 14
+20 opr 0 15
+21 opr 0 16
+22 sto 0 3
+23 jmp 0 11
+24 opr 0 0
+
+    
+    1 const a val=10
+    2 var   b lev=0 addr=3
+    3 var   c lev=0 addr=4
+    4 proc  p lev=0 addr=2 size=3
+
+    1 const a val=10
+    2 var   b lev=0 addr=3
+    3 var   c lev=0 addr=4
+    4 proc  p lev=0 addr=2 size=3
+
+Start pl0
+?4
+28
+?5
+30
+?0
+End pl0
+
+================
+test2_call.txt
+
+0 jmp 0 28
+1 jmp 0 17
+2 jmp 0 3
+3 int 0 5
+4 lod 2 3
+5 lit 0 1
+6 opr 0 2
+7 sto 2 3
+8 lod 2 3
+9 opr 0 14
+10 opr 0 15
+11 lod 2 3
+12 lod 2 4
+13 opr 0 10
+14 jpc 0 16
+15 cal 2 1
+16 opr 0 0
+17 int 0 4
+18 cal 0 3
+19 opr 0 0
+20 jmp 0 21
+21 int 0 4
+22 lod 1 3
+23 lod 1 4
+24 opr 0 10
+25 jpc 0 27
+26 cal 1 17
+27 opr 0 0
+28 int 0 5
+29 lit 0 0
+30 sto 0 3
+31 lit 0 2
+32 sto 0 4
+33 cal 0 21
+34 opr 0 0
+
+    1 var   a lev=0 addr=3
+    2 var   b lev=0 addr=4
+    3 proc  p lev=0 addr=1 size=0
+    4 var   x lev=1 addr=3
+    5 proc  r lev=1 addr=3 size=5
+    6 var   x lev=2 addr=3
+    7 var   y lev=2 addr=4
+
+    1 var   a lev=0 addr=3
+    2 var   b lev=0 addr=4
+    3 proc  p lev=0 addr=17 size=4
+    4 var   x lev=1 addr=3
+    5 proc  r lev=1 addr=3 size=5
+
+    1 var   a lev=0 addr=3
+    2 var   b lev=0 addr=4
+    3 proc  p lev=0 addr=17 size=4
+    4 proc  q lev=0 addr=21 size=4
+    5 var   x lev=1 addr=3
+
+    1 var   a lev=0 addr=3
+    2 var   b lev=0 addr=4
+    3 proc  p lev=0 addr=17 size=4
+    4 proc  q lev=0 addr=21 size=4
+
+Start pl0
+1
+2
+End pl0
+======================
+test3_gcd.txt
+0 jmp 0 34
+1 jmp 0 2
+2 int 0 5
+3 lod 1 3
+4 sto 0 3
+5 lod 1 4
+6 sto 0 4
+7 lod 0 3
+8 lod 0 4
+9 opr 0 9
+10 jpc 0 28
+11 lod 0 3
+12 lod 0 4
+13 opr 0 10
+14 jpc 0 19
+15 lod 0 4
+16 lod 0 3
+17 opr 0 3
+18 sto 0 4
+19 lod 0 4
+20 lod 0 3
+21 opr 0 10
+22 jpc 0 27
+23 lod 0 3
+24 lod 0 4
+25 opr 0 3
+26 sto 0 3
+27 jmp 0 7
+28 lod 0 3
+29 sto 1 5
+30 lod 1 5
+31 opr 0 14
+32 opr 0 15
+33 opr 0 0
+34 int 0 8
+35 lit 0 84
+36 sto 0 3
+37 lit 0 36
+38 sto 0 4
+39 cal 0 2
+40 opr 0 0
+
+    1 var   x lev=0 addr=3
+    2 var   y lev=0 addr=4
+    3 var   z lev=0 addr=5
+    4 var   q lev=0 addr=6
+    5 var   r lev=0 addr=7
+    6 proc  gcd lev=0 addr=2 size=5
+    7 var   f lev=1 addr=3
+    8 var   g lev=1 addr=4
+
+    1 var   x lev=0 addr=3
+    2 var   y lev=0 addr=4
+    3 var   z lev=0 addr=5
+    4 var   q lev=0 addr=6
+    5 var   r lev=0 addr=7
+    6 proc  gcd lev=0 addr=2 size=5
+
+Start pl0
+12
+End pl0
+
+=========================
+test4_sum
+0 jmp 0 17
+1 jmp 0 2
+2 int 0 3
+3 lod 1 3
+4 lit 0 0
+5 opr 0 12
+6 jpc 0 16
+7 lod 1 4
+8 lod 1 3
+9 opr 0 2
+10 sto 1 4
+11 lod 1 3
+12 lit 0 1
+13 opr 0 3
+14 sto 1 3
+15 cal 1 2
+16 opr 0 0
+17 int 0 5
+18 lit 0 100
+19 sto 0 3
+20 lit 0 0
+21 sto 0 4
+22 cal 0 2
+23 lod 0 4
+24 opr 0 14
+25 opr 0 15
+26 opr 0 0
+
+    
+    1 var   m lev=0 addr=3
+    2 var   sum lev=0 addr=4
+    3 proc  psum lev=0 addr=2 size=3
+
+    1 var   m lev=0 addr=3
+    2 var   sum lev=0 addr=4
+    3 proc  psum lev=0 addr=2 size=3
+
+Start pl0
+5050
+End pl0
+====================
+test5_factorial
+0 jmp 0 17
+1 jmp 0 2
+2 int 0 3
+3 lod 1 3
+4 lit 0 0
+5 opr 0 12
+6 jpc 0 16
+7 lod 1 4
+8 lod 1 3
+9 opr 0 4
+10 sto 1 4
+11 lod 1 3
+12 lit 0 1
+13 opr 0 3
+14 sto 1 3
+15 cal 1 2
+16 opr 0 0
+17 int 0 5
+18 lit 0 6
+19 sto 0 3
+20 lit 0 1
+21 sto 0 4
+22 cal 0 2
+23 lod 0 4
+24 opr 0 14
+25 opr 0 15
+26 opr 0 0
+
+    
+    1 var   m lev=0 addr=3
+    2 var   fact lev=0 addr=4
+    3 proc  factorial lev=0 addr=2 size=3
+
+    1 var   m lev=0 addr=3
+    2 var   fact lev=0 addr=4
+    3 proc  factorial lev=0 addr=2 size=3
+
+Start pl0
+720
+End pl0
+=========================
+test8_bignum
+0 jmp 0 1
+1 int 0 3
+2 lit 0 2047
+3 opr 0 14
+4 opr 0 15
+5 lit 0 2047
+6 lit 0 2047
+7 opr 0 4
+8 opr 0 14
+9 opr 0 15
+10 opr 0 0
+
+    1 const m val=2047
+
+Start pl0
+2047
+4190209
+End pl0
+===========================
+test9_mul_gcd
+0 jmp 0 66
+1 jmp 0 2
+2 int 0 5
+3 lod 1 3
+4 sto 0 3
+5 lod 1 4
+6 sto 0 4
+7 lit 0 0
+8 sto 1 5
+9 lod 0 4
+10 lit 0 0
+11 opr 0 12
+12 jpc 0 29
+13 lod 0 4
+14 opr 0 6
+15 jpc 0 20
+16 lod 1 5
+17 lod 0 3
+18 opr 0 2
+19 sto 1 5
+20 lit 0 2
+21 lod 0 3
+22 opr 0 4
+23 sto 0 3
+24 lod 0 4
+25 lit 0 2
+26 opr 0 5
+27 sto 0 4
+28 jmp 0 9
+29 lod 1 5
+30 opr 0 14
+31 opr 0 15
+32 opr 0 0
+33 jmp 0 34
+34 int 0 5
+35 lod 1 3
+36 sto 0 3
+37 lod 1 4
+38 sto 0 4
+39 lod 0 3
+40 lod 0 4
+41 opr 0 9
+42 jpc 0 60
+43 lod 0 3
+44 lod 0 4
+45 opr 0 10
+46 jpc 0 51
+47 lod 0 4
+48 lod 0 3
+49 opr 0 3
+50 sto 0 4
+51 lod 0 4
+52 lod 0 3
+53 opr 0 10
+54 jpc 0 59
+55 lod 0 3
+56 lod 0 4
+57 opr 0 3
+58 sto 0 3
+59 jmp 0 39
+60 lod 0 3
+61 sto 1 5
+62 lod 1 5
+63 opr 0 14
+64 opr 0 15
+65 opr 0 0
+66 int 0 8
+67 lit 0 7
+68 sto 0 3
+69 lit 0 85
+70 sto 0 4
+71 cal 0 2
+72 lit 0 84
+73 sto 0 3
+74 lit 0 36
+75 sto 0 4
+76 cal 0 34
+77 opr 0 0
+
+    1 const m val=7
+    2 const n val=85
+    3 var   x lev=0 addr=3
+    4 var   y lev=0 addr=4
+    5 var   z lev=0 addr=5
+    6 var   q lev=0 addr=6
+    7 var   r lev=0 addr=7
+    8 proc  multiply lev=0 addr=2 size=5
+    9 var   a lev=1 addr=3
+    10 var   b lev=1 addr=4
+
+    1 const m val=7
+    2 const n val=85
+    3 var   x lev=0 addr=3
+    4 var   y lev=0 addr=4
+    5 var   z lev=0 addr=5
+    6 var   q lev=0 addr=6
+    7 var   r lev=0 addr=7
+    8 proc  multiply lev=0 addr=2 size=5
+    9 proc  gcd lev=0 addr=34 size=5
+    10 var   f lev=1 addr=3
+    11 var   g lev=1 addr=4
+
+    1 const m val=7
+    2 const n val=85
+    3 var   x lev=0 addr=3
+    4 var   y lev=0 addr=4
+    5 var   z lev=0 addr=5
+    6 var   q lev=0 addr=6
+    7 var   r lev=0 addr=7
+    8 proc  multiply lev=0 addr=2 size=5
+    9 proc  gcd lev=0 addr=34 size=5
+
+Start pl0
+595
+12
+End pl0
+=========================
+test10_cockrabbit
+
+0 jmp 0 1
+1 int 0 5
+2 lit 0 1
+3 sto 0 3
+4 lod 0 3
+5 lit 0 30
+6 opr 0 10
+7 jpc 0 33
+8 lit 0 30
+9 lod 0 3
+10 opr 0 3
+11 sto 0 4
+12 lod 0 3
+13 lit 0 2
+14 opr 0 4
+15 lod 0 4
+16 lit 0 4
+17 opr 0 4
+18 opr 0 2
+19 lit 0 90
+20 opr 0 8
+21 jpc 0 28
+22 lod 0 3
+23 opr 0 14
+24 opr 0 15
+25 lod 0 4
+26 opr 0 14
+27 opr 0 15
+28 lod 0 3
+29 lit 0 1
+30 opr 0 2
+31 sto 0 3
+32 jmp 0 4
+33 opr 0 0
+
+    1 const h val=30
+    2 const f val=90
+    3 var   cock lev=0 addr=3
+    4 var   rabbit lev=0 addr=4
+
+Start pl0
+15
+15
+End pl0
+
+===============
+test11_divide
+0 jmp 0 22
+1 jmp 0 2
+2 int 0 3
+3 lit 0 0
+4 sto 1 3
+5 lod 1 4
+6 lit 0 7
+7 opr 0 11
+8 jpc 0 18
+9 lod 1 4
+10 lit 0 7
+11 opr 0 3
+12 sto 1 4
+13 lod 1 3
+14 lit 0 1
+15 opr 0 2
+16 sto 1 3
+17 jmp 0 5
+18 lod 1 3
+19 opr 0 14
+20 opr 0 15
+21 opr 0 0
+22 int 0 5
+23 lit 0 25
+24 sto 0 4
+25 cal 0 2
+26 opr 0 0
+
+    
+    1 const a val=25
+    2 const b val=7
+    3 var   q lev=0 addr=3
+    4 var   r lev=0 addr=4
+    5 proc  divide lev=0 addr=2 size=3
+
+    1 const a val=25
+    2 const b val=7
+    3 var   q lev=0 addr=3
+    4 var   r lev=0 addr=4
+    5 proc  divide lev=0 addr=2 size=3
+
+Start pl0
+3
+End pl0
+===================================
+test12_block
+
+0 jmp 0 30
+1 jmp 0 19
+2 jmp 0 3
+3 int 0 5
+4 lit 0 0
+5 sto 2 3
+6 lod 2 3
+7 lod 2 4
+8 opr 0 10
+9 jpc 0 18
+10 lod 2 4
+11 lit 0 1
+12 opr 0 3
+13 sto 2 4
+14 lod 2 4
+15 opr 0 14
+16 opr 0 15
+17 cal 2 1
+18 opr 0 0
+19 int 0 4
+20 cal 0 3
+21 opr 0 0
+22 jmp 0 23
+23 int 0 4
+24 lod 1 3
+25 lod 1 4
+26 opr 0 10
+27 jpc 0 29
+28 cal 1 19
+29 opr 0 0
+30 int 0 5
+31 lit 0 1
+32 sto 0 3
+33 lit 0 2
+34 sto 0 4
+35 cal 0 23
+36 opr 0 0
+    1 var   a lev=0 addr=3
+    2 var   b lev=0 addr=4
+    3 proc  p lev=0 addr=1 size=0
+    4 var   x lev=1 addr=3
+    5 proc  r lev=1 addr=3 size=5
+    6 var   x lev=2 addr=3
+    7 var   y lev=2 addr=4
+
+    1 var   a lev=0 addr=3
+    2 var   b lev=0 addr=4
+    3 proc  p lev=0 addr=19 size=4
+    4 var   x lev=1 addr=3
+    5 proc  r lev=1 addr=3 size=5
+
+    1 var   a lev=0 addr=3
+    2 var   b lev=0 addr=4
+    3 proc  p lev=0 addr=19 size=4
+    4 proc  q lev=0 addr=23 size=4
+    5 var   x lev=1 addr=3
+
+    1 var   a lev=0 addr=3
+    2 var   b lev=0 addr=4
+    3 proc  p lev=0 addr=19 size=4
+    4 proc  q lev=0 addr=23 size=4
+
+Start pl0
+1
+0
+End pl0
+==================
+test13_call
+0 jmp 0 25
+1 jmp 0 18
+2 jmp 0 15
+3 jmp 0 4
+4 int 0 3
+5 lod 3 3
+6 lit 0 1
+7 opr 0 3
+8 sto 3 3
+9 lod 3 3
+10 lit 0 0
+11 opr 0 12
+12 jpc 0 14
+13 cal 3 1
+14 opr 0 0
+15 int 0 3
+16 cal 0 4
+17 opr 0 0
+18 int 0 3
+19 cal 0 15
+20 opr 0 0
+21 jmp 0 22
+22 int 0 3
+23 cal 1 18
+24 opr 0 0
+25 int 0 4
+26 lit 0 3
+27 sto 0 3
+28 cal 0 22
+29 opr 0 0
+
+    
+    1 var   a lev=0 addr=3
+    2 proc  p lev=0 addr=1 size=0
+    3 proc  q lev=1 addr=2 size=0
+    4 proc  r lev=2 addr=4 size=3
+
+    1 var   a lev=0 addr=3
+    2 proc  p lev=0 addr=1 size=0
+    3 proc  q lev=1 addr=15 size=3
+    4 proc  r lev=2 addr=4 size=3
+
+    1 var   a lev=0 addr=3
+    2 proc  p lev=0 addr=18 size=3
+    3 proc  q lev=1 addr=15 size=3
+
+    
+    1 var   a lev=0 addr=3
+    2 proc  p lev=0 addr=18 size=3
+    3 proc  s lev=0 addr=22 size=3
+
+    1 var   a lev=0 addr=3
+    2 proc  p lev=0 addr=18 size=3
+    3 proc  s lev=0 addr=22 size=3
+
+Start pl0
+End pl0
+=============
+test14 procsym
+0 jmp 0 4
+1 jmp 0 2
+2 int 0 3
+3 opr 0 0
+4 int 0 3
+5 opr 0 0
+    
+    1 proc  q lev=0 addr=2 size=3
+
+    1 proc  q lev=0 addr=2 size=3
+Start pl0
+End pl0
+==========================
+test15
+0 jmp 0 1
+1 int 0 3
+2 opr 0 0
+
+    

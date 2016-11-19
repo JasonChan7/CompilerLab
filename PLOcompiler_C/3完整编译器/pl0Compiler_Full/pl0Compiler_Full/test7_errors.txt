@@ -1,0 +1,16 @@
+const m:=7;n=85
+var x;y,z,
+procedure plus;
+var a,b,c;
+begin
+  a=x;
+  b:=y
+  c:=a+b;
+end;
+begin
+  x:=m
+  y:=n
+  call a
+  call plvs
+  z:=c;
+end.

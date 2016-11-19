@@ -1,0 +1,23 @@
+var a,b;
+  procedure p;
+     var x;
+     procedure r;
+       var x,y;
+       begin
+            a:=a+1;
+            write (a);
+            if a<b then call p;            
+       end;
+    begin
+       call r;
+    end;
+  procedure q;
+      var x;
+      begin
+           if a<b then call p;
+      end;
+begin
+   a:=0;
+   b:=2;
+   call q;
+end.

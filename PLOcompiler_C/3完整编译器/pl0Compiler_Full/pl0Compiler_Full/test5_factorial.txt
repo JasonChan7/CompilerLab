@@ -1,0 +1,16 @@
+var m,fact;
+procedure factorial;
+begin
+if m>0 then
+ begin
+  fact:=fact*m;
+  m:=m-1;
+  call factorial;
+ end;
+end;
+begin
+m:=6;
+fact:=1;
+call factorial;
+write(fact);
+end.

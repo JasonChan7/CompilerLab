@@ -1,0 +1,4 @@
+const m=2047;
+begin
+  write(m,2047*2047);
+end.

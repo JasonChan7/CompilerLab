@@ -1,0 +1,10 @@
+var x;
+procedure plus;
+var a,b;
+begin
+ a:=3;
+ b:=7;
+ x:=a+b;
+ write(x);
+end;
+call plus.
