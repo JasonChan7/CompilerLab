@@ -2,11 +2,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "small.tab.h"
+int line = 1;
 void yyerror(char *);
 %}
 %%
 \/\*(.|\n)*?\*\/ ; /* ignore comments */
-[ \t\n]+ ; /* ignore whitespace */
+[ \t]+ ; /* ignore whitespace */
+[\n] {
+    line++;
+}
  /* recognize identifier */
 [A-Za-z]([A-Za-z]|[0-9])* {
     yylval.ident = *yytext;
