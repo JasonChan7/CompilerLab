@@ -69,6 +69,8 @@
 	bool statbegsys[symnum];    /* 表示语句开始的符号集合 */
 	bool facbegsys[symnum];     /* 表示因子开始的符号集合 */
 	int symbolTablePtr = 0; 	/* point the last symbol of table */
+	int currLevel = 0;			/* 记录当前所在层 */
+	
 
 	/* 符号表结构 */
 	struct tablestruct
@@ -101,6 +103,7 @@
 	void init(void);
 %}
 %union {
+	bool tf; /* boolean value */
 	int integer; /* integer value */ 
 	char ident[15]; /* identifier */ 
 }
@@ -138,40 +141,67 @@ repeat_stmt:
 assign_stmt:
 	identifier BC expr {
 		int i = position($<ident>1);
-		if (i != 0) {
-			yyerror("redeclaration variable");	/* 标识符已声明 */
+		if (i == 0) {
+			yyerror("undeclared variable");	/* 未声明标识符 */
 			exit(1);
 		}
-		enter(variable, $<ident>1, $<integer>3);
+		else if (table[i].kind != variable) {
+			yyerror("%s is not a variable", $<ident>1);	/* 标识符非变量 */
+			exit(1);
+		}
+		gen(sto, table[i].level, table[i.adr]);
+		$<integer>$ = getValue(i); /* 表达式的值即identifier的值 */
 	}
 	;
 read_stmt:
-	READ identifier
+	READ identifier {
+		int i = position($<ident>2);
+		if (i == 0) {
+			yyerror("undeclared variable");	/* 未声明标识符 */
+			exit(1);
+		}
+		else if (table[i].kind != variable) {
+			yyerror("%s is not a variable", $<ident>1);	/* 标识符非变量 */
+			exit(1);
+		}
+		gen(opr, 0, 0); /* 读操作 */
+		gen(sto, table[i].level, table[i].adr); /* 存变量 */
+		$<integer>$ = getValue(i); /* 表达式的值即identifier的值 */
+	}
 	;
 write_stmt:
 	WRITE expr {
-		fprintf(stdout, "%d\n", $<integer>2);
+		gen(opr, 0, 0); /* 写操作 */
+		$<integer>$ = $<integer>2;
 	}
 	;
 expr:
-	simple_expr
+	simple_expr {
+		$<integer>$ = $<integer>1;
+	}
 	| simple_expr EQ simple_expr {
 		gen(opr, 0, 8);
+		$<integer>$ = $<integer>1==$<integer>3 ? 1:0;
 	}
 	| simple_expr NE simple_expr {
 		gen(opr, 0, 9);
+		$<integer>$ = $<integer>1!=$<integer>3 ? 1:0;
 	}
 	| simple_expr LT simple_expr {
 		gen(opr, 0, 10);
+		$<integer>$ = $<integer>1<$<integer>3 ? 1:0;
 	}
 	| simple_expr GE simple_expr {
 		gen(opr, 0, 11);
+		$<integer>$ = $<integer>1>$<integer>3 ? 1:0;
 	}
 	| simple_expr GT simple_expr {
 		gen(opr, 0, 12);
+		$<integer>$ = $<integer>1>=$<integer>3 ? 1:0;
 	}
 	| simple_expr LE simple_expr {
 		gen(opr, 0, 13);
+		$<integer>$ = $<integer>1<=$<integer>3 ? 1:0;
 	}
 	;
 simple_expr:
@@ -222,7 +252,7 @@ simple_expr:
 					break;
 				case variable:	/* 标识符为变量 */
 					gen(lod, table[i].level, table[i].adr);	/* 找到变量地址并将其值入栈 */
-					$<integer>$ = table[i].val;
+					$<integer>$ = getValue(i); /* 表达式的值即identifier的值 */
 					break;
 				case procedure:	/* 标识符为过程 */
 					yyerror("cannot be procedure");	/* 不能为过程 */
