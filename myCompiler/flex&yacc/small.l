@@ -11,19 +11,9 @@ void yyerror(char *);
 [\n] {
     line++;
 }
- /* recognize identifier */
-[A-Za-z]([A-Za-z]|[0-9])* {
-    yylval.ident = *yytext;
-    return IDENT;
-}
- /* recognize integer */
-[0-9]+ {
-    yylval.integer = atoi(yytext);
-    return INTEGER;
-}
  /* match the add-op, mul-op, bracket and etc. */
 [-()=+*/;.] {
-    return *yytext;
+    return yytext[0];
 }
  /* match the comparison-op */
 ":=" return BC;
@@ -42,6 +32,17 @@ void yyerror(char *);
 "until"     return UNTIL;
 "read"      return READ;
 "write"     return WRITE;
+ /* recognize identifier */
+[A-Za-z]([A-Za-z]|[0-9])* {
+    strcpy(yylval.ident, yytext);
+    return IDENT;
+}
+ /* recognize integer */
+[0-9]+ {
+    yylval.integer = atoi(yytext);
+    // fprintf(stdout, "%d\n", yylval.integer);
+    return INTEGER;
+}
  /* unknown character */
 . yyerror("unknown character");
 %%
