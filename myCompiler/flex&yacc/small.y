@@ -142,7 +142,7 @@ constdef:
 	;
 
 /* 函数相关定义 */
-procdecl：
+procdecl:
 
 stmt_sequence:
 	stmt_sequence ';' statement
