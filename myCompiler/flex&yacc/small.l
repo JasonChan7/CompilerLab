@@ -1,6 +1,8 @@
 %{
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <malloc.h>
 #include "small.tab.h"
 int line = 1;
 void yyerror(char *);
@@ -12,7 +14,7 @@ void yyerror(char *);
     line++;
 }
  /* match the add-op, mul-op, bracket and etc. */
-[-()=+*/;.] {
+[-()=+%*/;.] {
     return yytext[0];
 }
  /* match the comparison-op */
@@ -32,8 +34,17 @@ void yyerror(char *);
 "until"     return UNTIL;
 "read"      return READ;
 "write"     return WRITE;
+"call"      return CALL;
+"const"     return CONST;
+"begin"     return BEGIN;
+"XOR"       return XOR;
+"ODD"       return ODD;
+"procedure" return PROC;
+"while"     return WHILE;
+"do"        return DO;
  /* recognize identifier */
 [A-Za-z]([A-Za-z]|[0-9])* {
+    yylval.ident = (char*)malloc(strlen(yytext)+1);
     strcpy(yylval.ident, yytext);
     return IDENT;
 }
@@ -46,6 +57,9 @@ void yyerror(char *);
  /* unknown character */
 . yyerror("unknown character");
 %%
+void redirectInput(FILE *input) {
+    yyin = input;
+}
 int yywrap(void) {
     return 1;
 }
