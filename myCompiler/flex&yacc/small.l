@@ -14,7 +14,7 @@ void yyerror(char *);
     line++;
 }
  /* match the add-op, mul-op, bracket and etc. */
-[-()=+%*/;.] {
+[-()=+%*/;.,] {
     return yytext[0];
 }
  /* match the comparison-op */
@@ -36,10 +36,11 @@ void yyerror(char *);
 "write"     return WRITE;
 "call"      return CALL;
 "const"     return CONST;
+"var"       return VAR;
 "begin"     return BEGIN;
 "XOR"       return XOR;
 "ODD"       return ODD;
-"procedure" return PROC;
+"def"       return PROC;
 "while"     return WHILE;
 "do"        return DO;
  /* recognize identifier */

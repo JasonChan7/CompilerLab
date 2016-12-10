@@ -10,19 +10,20 @@
 	#define false 0
 
 	// #define norw 13       /* ??保留字个数 */
-	#define txmax 100     /* 符号表容量 */
+	#define symbolTablePointmax 100     /* 符号表容量 */
 	// #define nmax 14       /* ??数字的最大位数 */
 	#define al 10         /* 标识符的最大长度 */
 	// #define maxerr 30     /* ??允许的最多错误数 */
 	#define amax 2048     /* 地址上界 */
 	#define levmax 3      /* 最大允许过程嵌套声明层数 */
-	#define cxmax 200     /* 最多的虚拟机代码数 */
+	#define codeTablePointmax 200     /* 最多的虚拟机代码数 */
 	#define stacksize 500 /* 运行时数据栈元素最多为500个 */
 
 	/* 符号表中的类型 */
 	enum object {
 		constant, 
 		variable, 
+		parameter,
 		procedure,
 	};
 	
@@ -36,7 +37,7 @@
 		int adr;            /* 地址，仅const不使用 */
 		int size;           /* 需要分配的数据区空间, 仅procedure使用 */
 	};
-	struct tablestruct table[txmax]; /* 符号表 */
+	struct tablestruct table[symbolTablePointmax]; /* 符号表 */
 
 	/* 虚拟机代码指令 */
 	enum fct {
@@ -53,17 +54,18 @@
 		int l;      /* 引用层与声明层的层次差 */
 		int a;      /* 根据f的不同而不同 */
 	};
-	struct instruction code[cxmax]; /* 存放虚拟机代码的数组 */
+	struct instruction code[codeTablePointmax]; /* 存放虚拟机代码的数组 */
 
 	char id[al+1];      		/* 当前ident，多出的一个字节用于存放0 */
 	int proctable[3];			/* 嵌套过程索引表，最多嵌套三层 */
-	int tx;						/* 符号表当前尾指针 */
-	int cx;             		/* 虚拟机代码指针, 取值范围[0, cxmax-1]*/
-	int px;						/* 嵌套过程索引表proctable的指针 */
+	int symbolTablePoint;		/* 符号表当前尾指针 */
+	int codeTablePoint;         /* 虚拟机代码指针, 取值范围[0, codeTablePointmax-1]*/
+	int procTablePoint;			/* 嵌套过程索引表proctable的指针 */
 	int lev = 0;				/* 记录当前所在层 */
 	int num;            		/* 当前number */
 	bool listswitch ;   		/* 显示虚拟机代码与否 */
 	bool tableswitch ;  		/* 显示符号表与否 */
+	int currParaCnt = 0;		/* 记录当前调用函数的所扫描到的参数个数 */
 
 	FILE* fin;      /* 输入源文件 */
 	FILE* ftable;	/* 输出符号表 */
@@ -94,12 +96,12 @@
 %token <ident> IDENT
 %token <integer> INTEGER
 %token <integer> get_table_addr /* 记录本层标识符的初始位置 */
-%token IF THEN ELSE END REPEAT UNTIL READ WRITE CALL CONST BEGIN XOR ODD PROC WHILE DO
+%token IF THEN ELSE END REPEAT UNTIL READ WRITE CALL CONST VAR BEGIN XOR ODD PROC WHILE DO
 %nonassoc IFX
 %nonassoc ELSE
 %token BC GT LT GE LE EQ NE
 %left '+' '-'
-%left '*' '/'
+%left '*' '/' '%'
 %nonassoc UMINUS
 %%
 program:
@@ -107,42 +109,135 @@ program:
 	;
 
 block: {
-	table[tx].adr = cx;
-	$<integer>$ = cx;
+	table[symbolTablePoint].adr = codeTablePoint;
+	$<integer>$ = codeTablePoint;
 	gen(jmp, 0, 0);
 } get_table_addr
-  constdecl
-  procdecl {
-	code[$<integer>1].a = cx;
-	table[$2].adr = cx;
-	table[$2].size = $3+3;
-	gen(ini, 0, $3+3);
+  const_decl
+  var_decl {
+	  setdx($<integer>2+$<integer>3);
+  }
+  proc_decls {
+	code[$<integer>1].a = codeTablePoint;
+
+	// table[$2].adr = codeTablePoint;
+	// table[$2].size = $4+3;
+	// gen(ini, 0, $4+3);
 	displaytable();
 } stmt_sequence;
 
 get_table_addr: {
-	$<integer>$ = tx;
+	$<integer>$ = symbolTablePoint;
+};
+get_code_addr: {
+	$<integer>$ = codeTablePoint; 
 };
 
 /* 常量相关定义 */
-constdecl: 
-	CONST constlist ';'
-	|
+const_decl: 
+	CONST const_list ';' {
+		$<integer>$ = $<integer>2;
+	}
+	| {
+		$<integer>$ = 0;
+	}
 	;
-constlist:
-	constdef
-	| constlist ',' constdef
+const_list:
+	const_def {
+		$<integer>$ = $<integer>1;
+	}
+	| const_list ',' const_def {
+		$<integer>$ = $<integer>1+1;
+	}
 	;
 constdef:
 	IDENT BC INTEGER {
 		strcpy(id, $<ident>1);
 		num = $<integer>3;
 		enter(constant);
+		$<integer>$ = 1;
+	}
+	;
+	
+/* 变量相关定义 */
+var_decl: 
+	VAR var_list ';' {
+		$<integer>$ = $<integer>2;
+	}
+	| {
+		$<integer>$ = 0;
+	}
+	;
+var_list:
+	var_def {
+		$<integer>$ = $<integer>1;
+	}
+	| var_list ',' var_def {
+		$<integer>$ = $<integer>1+$<integer>3;
+	}
+	;
+var_def:
+	IDENT {
+		strcpy(id, $1);
+		enter(variable);
+		$<integer>$ = 1;
 	}
 	;
 
 /* 函数相关定义 */
-procdecl:
+proc_decls: 
+	proc_decls proc_decl BEGIN proc_body END {
+		$<integer>$ = $<integer>$1+1;
+	}
+	| {
+		$<integer>$ = 0;
+	}
+	;
+proc_decl: 
+	increase_procTablePoint PROC IDENT increase_level '(' para_list ')'' ';' {
+		strcpy(id, $3);
+		enter(procedure);
+		proctable[procTablePoint] = symbolTablePoint;
+	}
+	;
+para_list:
+	para_stmt {
+		$<integer>$ = $<integer>1;
+	}
+	| {
+		$<integer>$ = 0;
+	}
+	;
+para_stmt:
+	IDENT {
+		$<integer>$ = 1;
+		strcpy(id, $1);
+		enter(parameter);
+	}
+	| para_stmt ',' IDENT {
+		$<integer>$ = $<integer>1+1;
+		strcpy(id, $1);
+		enter(parameter);
+	}
+	;
+proc_body:
+	block decrease_level ';'
+	;
+increase_procTablePoint: {
+	procTablePoint++;
+};
+decrease_level: {
+	lev--;
+};
+decrease_procTablePoint: {
+	procTablePoint--;
+};
+increase_level: {
+	lev++;
+	if (lev > levmax) {
+		yyerror("level overflow");
+	}
+};
 
 stmt_sequence:
 	stmt_sequence ';' statement
@@ -154,54 +249,127 @@ statement:
 	| assign_stmt
 	| read_stmt
 	| write_stmt
+	| while_stmt
+	| call_stmt
 	;
 if_stmt:
-	IF expr THEN stmt_sequence END %prec IFX
-	| IF expr THEN stmt_sequence ELSE stmt_sequence END
+	IF expr get_code_addr {
+		gen(jpc, 0, 0);
+	} THEN stmt_sequence END %prec IFX {
+		code[$3].a = codeTablePoint;
+	}
+	| IF expr get_code_addr {
+		gen(jpc, 0, 0);
+	} THEN stmt_sequence get_code_addr {
+		gen(jmp, 0, 0);
+	} ELSE {
+		code[$3].a = codeTablePoint;
+	} stmt_sequence END {
+		code[$6].a = codeTablePoint;
+	}
 	;
 repeat_stmt:
-	REPEAT stmt_sequence UNTIL expr
+	REPEAT get_code_addr stmt_sequence UNTIL expr {
+		gen(jpc, 0, $<integer>2);
+	}
 	;
 assign_stmt:
 	identifier BC expr {
-		int i = position($<ident>1);
-		if (i == 0) {
+		if ($<integer>1 == 0) {
 			yyerror("undeclared variable");	/* 未声明标识符 */
 			exit(1);
 		}
-		else if (table[i].kind != variable) {
-			yyerror("%s is not a variable", $<ident>1);	/* 标识符非变量 */
+		else if (table[$<integer>1].kind != variable) {
+			yyerror("%s is not a variable", table[$<ident>1].name);	/* 标识符非变量 */
 			exit(1);
 		}
-		gen(sto, table[i].level, table[i.adr]);
-		$<integer>$ = getValue(i); /* 表达式的值即identifier的值 */
+		gen(sto, lev-table[$<integer>1].level, table[$<integer>1].adr);
 	}
 	;
 read_stmt:
 	READ identifier {
-		int i = position($<ident>2);
-		if (i == 0) {
+		if ($<integer>2 == 0) {
 			yyerror("undeclared variable");	/* 未声明标识符 */
 			exit(1);
 		}
-		else if (table[i].kind != variable) {
-			yyerror("%s is not a variable", $<ident>1);	/* 标识符非变量 */
+		else if (table[$<integer>2].kind != variable) {
+			yyerror("%s is not a variable", table[$<ident>2].name);	/* 标识符非变量 */
 			exit(1);
 		}
-		gen(opr, 0, 0); /* 读操作 */
-		gen(sto, table[i].level, table[i].adr); /* 存变量 */
-		$<integer>$ = getValue(i); /* 表达式的值即identifier的值 */
+		gen(opr, 0, 16); /* 读操作 */
+		gen(sto, lev-table[$<integer>2].level, table[$<integer>2].adr); /* 存变量 */
 	}
 	;
 write_stmt:
 	WRITE expr {
-		gen(opr, 0, 0); /* 写操作 */
+		gen(opr, 0, 14); /* 写操作 */
+		gen(opr, 0, 15);
 		$<integer>$ = $<integer>2;
 	}
 	;
+while_stmt:
+	WHILE get_code_addr '(' expr ')' get_code_addr {
+		gen(jpc, 0, 0);
+	} DO BEGIN stmt_sequence END {
+		gen(jmp, 0, $<integer>2)
+		code[$<integer>6].a = codeTablePoint;
+	}
+	;
+call_stmt:
+	CALL proc_identifier '(' arg_list ')' {
+		if ($<integer>2 == 0) {
+			yyerror("undeclared procedure");	/* 未声明标识符 */
+			exit(1);
+		}
+		else if (table[$<integer>2].size != $<integer>4) {
+			yyerror("wrong arguments");	/* 参数列表错误 */
+			exit(1);
+		}
+		gen(cal, lev-table[$<integer>2].level, table[$<integer>2].adr);
+	}
+	;
+arg_list:
+	arg_stmt {
+		$<integer>$ = $<integer>1;
+	}
+	| {
+		$<integer>$ = 0;
+	}
+	;
+arg_stmt:
+	identifier {
+		$<integer>$ = 1;
+		if ($<integer>1 == 0) {
+			yyerror("undeclared variable");	/* 未声明标识符 */
+			exit(1);
+		}
+		else if (table[$<integer>1].kind != variable) {
+			yyerror("%s is not a variable", table[$<ident>2].name);	/* 标识符是过程 */
+			exit(1);
+		}
+		gen(lod, lev-table[$<integer>1].level, table[$<integer>1].adr); /* 取变量 */
+	}
+	| arg_stmt ',' identifier {
+		$<integer>$ = $<integer>1+1;
+		if ($<integer>3 == 0) {
+			yyerror("undeclared variable");	/* 未声明标识符 */
+			exit(1);
+		}
+		else if (table[$<integer>3].kind != variable) {
+			yyerror("%s is not a variable", table[$<ident>3].name);	/* 标识符是过程 */
+			exit(1);
+		}
+		gen(lod, lev-table[$<integer>3].level, table[$<integer>3].adr); /* 取变量 */
+	}
+	;
+
 expr:
 	simple_expr {
-		$<integer>$ = $<integer>1;
+		$<integer>$ = $<integer>1==0 ? 1:0;
+	}
+	| ODD simple_expr {
+		gen(opr, 0, 6);
+		$<integer>$ = $<integer>2%2;
 	}
 	| simple_expr EQ simple_expr {
 		gen(opr, 0, 8);
@@ -265,8 +433,8 @@ simple_expr:
 	}
 	| IDENT {
 		int i = position($<ident>1);	/* 查找标识符在符号表中的位置 */
-		if (i == 0) {
-			yyerror("undefined variable");	/* 标识符未声明 */
+		if (i==0) {
+			yyerror("undefined variable");	/* 标识符未声明，只能使用本层的标识符 */
 		}
 		else {
 			switch (table[i].kind) {
@@ -275,7 +443,7 @@ simple_expr:
 					$<integer>$ = table[i].val;
 					break;
 				case variable:	/* 标识符为变量 */
-					gen(lod, table[i].level, table[i].adr);	/* 找到变量地址并将其值入栈 */
+					gen(lod, lev-table[i].level, table[i].adr);	/* 找到变量地址并将其值入栈 */
 					$<integer>$ = getValue(i); /* 表达式的值即identifier的值 */
 					break;
 				case procedure:	/* 标识符为过程 */
@@ -287,15 +455,47 @@ simple_expr:
 	;
 identifier:
 	IDENT {
-		strcpy($<ident>$, $<ident>1);
+		$<integer>$ = position($<ident>1);
 	}
 	;
+proc_identifier:
+	IDENT {
+		$<integer>$ = proc_position($<ident>1);
+	}
 %%
 void yyerror(char *s) {
+	err++;
 	fprintf(stdout, "line %d error: %s\n", line, s);
 }
+void enter(enum object k) {
+	symbolTablePtr++;
+	strcpy(table[symbolTablePtr].name, id); /* 符号表的name域记录标识符的名字 */
+	table[symbolTablePtr].kind = k;	
+	switch (k) {
+		case constant:	/* 常量 */
+			table[symbolTablePtr].val = num; /* 登记常数的值 */
+			table[]
+			break;
+		case variable:	/* 变量 */
+			table[symbolTablePtr].val = 0; /* 变量默认初始值为0 */
+			break;
+		case procedure:	/* 过程 */
+			break;
+		case parameter: /* 参数 */
+		
+	}
+}
+void init() {
+	symbolTablePoint = 0;
+	codeTablePoint = 0;
+	procTablePoint = 0;
+	lev = 0;
+	proctable[0] = 0;
+	num = 0;
+	err = 0;
+}
 void gen(enum fct x, int y, int z) {
-	if (cx >= cxmax) {
+	if (codeTablePoint >= codeTablePointmax) {
 		yyerror("Program is too long!");	/* 生成的虚拟机代码程序过长 */
 		exit(1);
 	}
@@ -303,53 +503,28 @@ void gen(enum fct x, int y, int z) {
 		yyerror("Displacement address is too big!");	/* 地址偏移越界 */
 		exit(1);
 	}
-	code[cx].f = x;
-	code[cx].l = y;
-	code[cx].a = z;
-	cx++;
+	code[codeTablePoint].f = x;
+	code[codeTablePoint].l = y;
+	code[codeTablePoint].a = z;
+	codeTablePoint++;
 }
-/* 
- * 查找标识符在符号表中的位置，从tx开始倒序查找标识符
- * 找到则返回在符号表中的位置，否则返回0
- * 
- * id:    要查找的名字
- */
 int position(char* id) {
 	int i = symbolTablePtr;
 	strcpy(table[0].name, id);
-	while (strcmp(table[i].name, id) != 0) {
+	while (strcmp(table[i].name, id)!=0 || table[i].level!=lev || table[i].kind==procedure) {
         i--;
     }
 	return i;
 }
-/* 
- * 在符号表中加入一项 
- *
- * k:      标识符的种类为const，var或procedure
- * ptx:    符号表尾指针的指针，为了可以改变符号表尾指针的值
- * lev:    标识符所在的层次
- * pdx:    dx为当前应分配的变量的相对地址，分配后要增加1
- * 
- */
-void enter(enum object k, char *currIdent, int currValue) {
-	symbolTablePtr++;
-	strcpy(table[(symbolTablePtr)].name, currIdent); /* 符号表的name域记录标识符的名字 */
-	table[(symbolTablePtr)].kind = k;	
-	switch (k) {
-		case constant:	/* 常量 */
-			if (currValue > amax) {
-				yyerror("constant out of bound");	/* 常数越界 */
-				currValue = 0;
-			}
-			table[(symbolTablePtr)].val = currValue; /* 登记常数的值 */
-			break;
-		case variable:	/* 变量 */
-			table[(symbolTablePtr)].val = currValue; /* 登记变量的值 */
-			break;
-		case procedure:	/* 过程 */
-			break;
-	}
+int proc_position(char* id) {
+	int i = symbolTablePtr;
+	strcpy(table[0].name, id);
+	while (strcmp(table[i].name, id)!=0 || table[i].kind!=procedure) {
+        i--;
+    }
+	return i;
 }
+
 /*
  * 解释程序 
  */
@@ -602,15 +777,15 @@ int main()
 	}
 	rewind(fin);
 
-	if ((foutput = fopen("foutput.txt", "w")) == NULL)
+	if ((foutput = fopen("foutput.symbolTablePointt", "w")) == NULL)
 	{
 		printf("Can't open the output file!\n");
 		exit(1);
 	}
 
-	if ((ftable = fopen("ftable.txt", "w")) == NULL)
+	if ((ftable = fopen("ftable.symbolTablePointt", "w")) == NULL)
 	{
-		printf("Can't open ftable.txt file!\n");
+		printf("Can't open ftable.symbolTablePointt file!\n");
 		exit(1);
 	}
 
@@ -624,7 +799,7 @@ int main()
 
     init();		/* 初始化 */
 	err = 0;
-	cc = ll = cx = 0;
+	cc = ll = codeTablePoint = 0;
 	ch = ' ';
 
 	getsym();
@@ -642,15 +817,15 @@ int main()
 		printf("\n===Parsing success!===\n");
 		fprintf(foutput,"\n===Parsing success!===\n");
 
-		if ((fcode = fopen("fcode.txt", "w")) == NULL)
+		if ((fcode = fopen("fcode.symbolTablePointt", "w")) == NULL)
 		{
-			printf("Can't open fcode.txt file!\n");
+			printf("Can't open fcode.symbolTablePointt file!\n");
 			exit(1);
 		}		
 
-		if ((fresult = fopen("fresult.txt", "w")) == NULL)
+		if ((fresult = fopen("fresult.symbolTablePointt", "w")) == NULL)
 		{
-			printf("Can't open fresult.txt file!\n");
+			printf("Can't open fresult.symbolTablePointt file!\n");
 			exit(1);
 		}
 		
