@@ -55,15 +55,24 @@ extern int yydebug;
     UNTIL = 265,
     READ = 266,
     WRITE = 267,
-    IFX = 268,
-    BC = 269,
-    GT = 270,
-    LT = 271,
-    GE = 272,
-    LE = 273,
-    EQ = 274,
-    NE = 275,
-    UMINUS = 276
+    CALL = 268,
+    CONST = 269,
+    VAR = 270,
+    BEGIN = 271,
+    XOR = 272,
+    ODD = 273,
+    PROC = 274,
+    WHILE = 275,
+    DO = 276,
+    IFX = 277,
+    BC = 278,
+    GT = 279,
+    LT = 280,
+    GE = 281,
+    LE = 282,
+    EQ = 283,
+    NE = 284,
+    UMINUS = 285
   };
 #endif
 
@@ -72,12 +81,13 @@ extern int yydebug;
 typedef union YYSTYPE YYSTYPE;
 union YYSTYPE
 {
-#line 100 "small.y" /* yacc.c:1909  */
+#line 93 "small.y" /* yacc.c:1909  */
 
+	bool tf; /* boolean value */
 	int integer; /* integer value */ 
-	char ident[15]; /* identifier */ 
+	char *ident; /* identifier */ 
 
-#line 81 "small.tab.h" /* yacc.c:1909  */
+#line 91 "small.tab.h" /* yacc.c:1909  */
 };
 # define YYSTYPE_IS_TRIVIAL 1
 # define YYSTYPE_IS_DECLARED 1

@@ -18,6 +18,7 @@
 	#define levmax 3      /* 最大允许过程嵌套声明层数 */
 	#define codeTablePointmax 200     /* 最多的虚拟机代码数 */
 	#define stacksize 500 /* 运行时数据栈元素最多为500个 */
+	#define paraTableMax 200
 
 	/* 符号表中的类型 */
 	enum object {
@@ -38,6 +39,7 @@
 		int size;           /* 需要分配的数据区空间, 仅procedure使用 */
 	};
 	struct tablestruct table[symbolTablePointmax]; /* 符号表 */
+	int paraTable[paraTableMax];
 
 	/* 虚拟机代码指令 */
 	enum fct {
@@ -95,7 +97,6 @@
 }
 %token <ident> IDENT
 %token <integer> INTEGER
-%token <integer> get_table_addr /* 记录本层标识符的初始位置 */
 %token IF THEN ELSE END REPEAT UNTIL READ WRITE CALL CONST VAR BEGIN XOR ODD PROC WHILE DO
 %nonassoc IFX
 %nonassoc ELSE
@@ -103,6 +104,7 @@
 %left '+' '-'
 %left '*' '/' '%'
 %nonassoc UMINUS
+%type <integer> get_table_addr get_code_addr /* 记录本层标识符的初始位置 */
 %%
 program:
 	block
@@ -150,7 +152,7 @@ const_list:
 		$<integer>$ = $<integer>1+1;
 	}
 	;
-constdef:
+const_def:
 	IDENT BC INTEGER {
 		strcpy(id, $<ident>1);
 		num = $<integer>3;
@@ -194,7 +196,7 @@ proc_decls:
 	}
 	;
 proc_decl: 
-	increase_procTablePoint PROC IDENT increase_level '(' para_list ')'' ';' {
+	increase_procTablePoint PROC IDENT increase_level '(' para_list ')' ';' {
 		strcpy(id, $3);
 		enter(procedure);
 		proctable[procTablePoint] = symbolTablePoint;
@@ -213,11 +215,13 @@ para_stmt:
 		$<integer>$ = 1;
 		strcpy(id, $1);
 		enter(parameter);
+		gen(sto, lev-table[symbolTablePoint].level, table[symbolTablePoint].adr); /* 存变量 */
 	}
 	| para_stmt ',' IDENT {
 		$<integer>$ = $<integer>1+1;
-		strcpy(id, $1);
+		strcpy(id, $3);
 		enter(parameter);
+		gen(sto, lev-table[symbolTablePoint].level, table[symbolTablePoint].adr); /* 存变量 */
 	}
 	;
 proc_body:
@@ -263,9 +267,9 @@ if_stmt:
 	} THEN stmt_sequence get_code_addr {
 		gen(jmp, 0, 0);
 	} ELSE {
-		code[$3].a = codeTablePoint;
+		code[$<integer>3].a = codeTablePoint;
 	} stmt_sequence END {
-		code[$6].a = codeTablePoint;
+		code[$<integer>6].a = codeTablePoint;
 	}
 	;
 repeat_stmt:
@@ -344,7 +348,7 @@ arg_stmt:
 			exit(1);
 		}
 		else if (table[$<integer>1].kind != variable) {
-			yyerror("%s is not a variable", table[$<ident>2].name);	/* 标识符是过程 */
+			yyerror("%s is not a variable", table[$<ident>1].name);	/* 标识符是过程 */
 			exit(1);
 		}
 		gen(lod, lev-table[$<integer>1].level, table[$<integer>1].adr); /* 取变量 */
@@ -468,21 +472,24 @@ void yyerror(char *s) {
 	fprintf(stdout, "line %d error: %s\n", line, s);
 }
 void enter(enum object k) {
-	symbolTablePtr++;
-	strcpy(table[symbolTablePtr].name, id); /* 符号表的name域记录标识符的名字 */
-	table[symbolTablePtr].kind = k;	
+	symbolTablePoint++;
+	strcpy(table[symbolTablePoint].name, id); /* 符号表的name域记录标识符的名字 */
+	table[symbolTablePoint].kind = k;	
 	switch (k) {
 		case constant:	/* 常量 */
-			table[symbolTablePtr].val = num; /* 登记常数的值 */
-			table[]
+			table[symbolTablePoint].val = num; /* 登记常数的值 */
+			table[symbolTablePoint].level = lev;
 			break;
 		case variable:	/* 变量 */
-			table[symbolTablePtr].val = 0; /* 变量默认初始值为0 */
+			table[symbolTablePoint].val = 0; /* 变量默认初始值为0 */
+			table[symbolTablePoint].level = lev;
 			break;
 		case procedure:	/* 过程 */
+			table[symbolTablePoint].level = lev;
 			break;
 		case parameter: /* 参数 */
-		
+			table[symbolTablePoint].level = lev;
+			break;
 	}
 }
 void init() {
@@ -493,6 +500,28 @@ void init() {
 	proctable[0] = 0;
 	num = 0;
 	err = 0;
+}
+int position(char* id) {
+	int i = symbolTablePoint;
+	strcpy(table[0].name, id);
+	while (strcmp(table[i].name, id)!=0 || table[i].level!=lev || table[i].kind==procedure) {
+        i--;
+    }
+	return i;
+}
+int proc_position(char* id) {
+	int i = symbolTablePoint;
+	strcpy(table[0].name, id);
+	while (strcmp(table[i].name, id)!=0 || table[i].kind!=procedure) {
+        i--;
+    }
+	return i;
+}
+void setdx(int n) {
+	int i;
+	for (i=1; i<=n; i++) {
+		table[symbolTablePoint-i+1] = n-i+3;
+	}
 }
 void gen(enum fct x, int y, int z) {
 	if (codeTablePoint >= codeTablePointmax) {
@@ -508,26 +537,47 @@ void gen(enum fct x, int y, int z) {
 	code[codeTablePoint].a = z;
 	codeTablePoint++;
 }
-int position(char* id) {
-	int i = symbolTablePtr;
-	strcpy(table[0].name, id);
-	while (strcmp(table[i].name, id)!=0 || table[i].level!=lev || table[i].kind==procedure) {
-        i--;
-    }
-	return i;
+void listall() {
+	int i;
+	char name[][5] = {
+		{"lit"}, {"opr"}, {"lod"}, {"sto"}, {"cal"}, {"int"}, {"jmp"}, {"jpc"},
+	};
+	if (listswitch) {
+		for (i = 0; i < codeTablePoint; i++) {
+			printf("%d %s %d %d\n", i, name[code[i].f], code[i].l, code[i].a);
+			fprintf(fcode, "%d %s %d %d\n", i, name[code[i].f], code[i].l, code[i].a);		
+		}
+	}
 }
-int proc_position(char* id) {
-	int i = symbolTablePtr;
-	strcpy(table[0].name, id);
-	while (strcmp(table[i].name, id)!=0 || table[i].kind!=procedure) {
-        i--;
-    }
-	return i;
+void displaytable() {
+	int i;
+	if (tableswitch) {
+		for (i = 1; i <= symbolTablePoint; i++) {
+			switch(table[i].kind) {
+				case constant:
+					printf("    %d const %s ", i, table[i].name);
+					printf("val=%d\n", table[i].val);
+					fprintf(ftable, "    %d const %s ", i, table[i].name);
+					fprintf(ftable, "val=%d\n", table[i].val);
+					break;
+				case variable:
+					printf("    %d var   %s ", i, table[i].name);
+					printf("lev=%d addr=%d\n", table[i].level, table[i].adr);
+					fprintf(ftable, "    %d var   %s ", i, table[i].name);
+					fprintf(ftable, "lev=%d addr=%d\n", table[i].level, table[i].adr);
+					break;
+				case procedure:
+					printf("    %d proc  %s ", i, table[i].name);
+					printf("lev=%d addr=%d size=%d\n", table[i].level, table[i].adr, table[i].size);
+					fprintf(ftable,"    %d proc  %s ", i, table[i].name);
+					fprintf(ftable,"lev=%d addr=%d size=%d\n", table[i].level, table[i].adr, table[i].size);
+					break;
+			}
+		}
+		printf("\n");
+		fprintf(ftable,"\n");
+	}
 }
-
-/*
- * 解释程序 
- */
 void interpret()
 {
 	int p = 0; /* 指令指针 */
@@ -654,7 +704,6 @@ void interpret()
 	printf("End pl0\n");
 	fprintf(fresult,"End pl0\n");
 }
-/* 通过过程基址求上l层过程的基址 */
 int base(int l, int* s, int b)
 {
 	int b1;
@@ -666,99 +715,10 @@ int base(int l, int* s, int b)
 	}
 	return b1;
 }
-/*
- * 初始化 
- */
-void init()
-{
-	int i;
 
-	/* 设置单字符符号 */
-	for (i=0; i<=255; i++)
-	{
-	    ssym[i] = nul;
-	}
-	ssym['+'] = plus;
-	ssym['-'] = minus;
-	ssym['*'] = times;
-	ssym['/'] = slash;
-	ssym['('] = lparen;
-	ssym[')'] = rparen;
-	ssym['='] = eql;
-	ssym[','] = comma;
-	ssym['.'] = period;
-	ssym['#'] = neq;
-	ssym[';'] = semicolon;
-
-	/* 设置保留字名字,按照字母顺序，便于二分查找 */
-	strcpy(&(word[0][0]), "begin");
-	strcpy(&(word[1][0]), "call");
-	strcpy(&(word[2][0]), "const");
-	strcpy(&(word[3][0]), "do");
-	strcpy(&(word[4][0]), "end");
-	strcpy(&(word[5][0]), "if");
-	strcpy(&(word[6][0]), "odd");
-	strcpy(&(word[7][0]), "procedure");
-	strcpy(&(word[8][0]), "read");
-	strcpy(&(word[9][0]), "then");
-    strcpy(&(word[10][0]), "var");
-    strcpy(&(word[11][0]), "while");
-    strcpy(&(word[12][0]), "write");
-
-	/* 设置保留字符号 */
-	wsym[0] = beginsym;	
-	wsym[1] = callsym;
-	wsym[2] = constsym;
-	wsym[3] = dosym;
-    wsym[4] = endsym;
-	wsym[5] = ifsym;
-	wsym[6] = oddsym;
-	wsym[7] = procsym;
-	wsym[8] = readsym;
-    wsym[9] = thensym;
-    wsym[10] = varsym;  
-	wsym[11] = whilesym;
-	wsym[12] = writesym;
-
-	/* 设置指令名称 */
-	strcpy(&(mnemonic[lit][0]), "lit");
-	strcpy(&(mnemonic[opr][0]), "opr");
-	strcpy(&(mnemonic[lod][0]), "lod");
-	strcpy(&(mnemonic[sto][0]), "sto");
-	strcpy(&(mnemonic[cal][0]), "cal");
-	strcpy(&(mnemonic[ini][0]), "int");
-	strcpy(&(mnemonic[jmp][0]), "jmp");
-	strcpy(&(mnemonic[jpc][0]), "jpc");
-
-    /* 设置符号集 */
-	for (i=0; i<symnum; i++)
-	{
-		declbegsys[i] = false;
-		statbegsys[i] = false;
-		facbegsys[i] = false;
-	}
-
-	/* 设置声明开始符号集 */
-	declbegsys[constsym] = true;
-	declbegsys[varsym] = true;
-	declbegsys[procsym] = true;
-
-	/* 设置语句开始符号集 */
-	statbegsys[beginsym] = true;
-	statbegsys[callsym] = true;
-	statbegsys[ifsym] = true;
-	statbegsys[whilesym] = true;
-
-	/* 设置因子开始符号集 */
-	facbegsys[ident] = true;
-	facbegsys[number] = true;
-	facbegsys[lparen] = true;
-}
 /* 主程序开始 */
 int main()
 {
-	bool nxtlev[symnum];
-    
 	printf("Input small test file?   ");
 	scanf("%s", fname);		/* 输入文件名 */
 
@@ -768,24 +728,15 @@ int main()
 		exit(1);
 	}
 
-	ch = fgetc(fin);
-	if (ch == EOF)
-	{
-		printf("The input file is empty!\n");
-		fclose(fin);
-		exit(1);
-	}
-	rewind(fin);
-
-	if ((foutput = fopen("foutput.symbolTablePointt", "w")) == NULL)
+	if ((foutput = fopen("foutput.txt", "w")) == NULL)
 	{
 		printf("Can't open the output file!\n");
 		exit(1);
 	}
 
-	if ((ftable = fopen("ftable.symbolTablePointt", "w")) == NULL)
+	if ((ftable = fopen("ftable.txt", "w")) == NULL)
 	{
-		printf("Can't open ftable.symbolTablePointt file!\n");
+		printf("Can't open ftable.txt file!\n");
 		exit(1);
 	}
 
@@ -796,36 +747,23 @@ int main()
 	printf("List symbol table?(Y/N)");	/* 是否输出符号表 */
 	scanf("%s", fname);
 	tableswitch = (fname[0]=='y' || fname[0]=='Y');        
-
+	
+	redirectInput(fin);
     init();		/* 初始化 */
-	err = 0;
-	cc = ll = codeTablePoint = 0;
-	ch = ' ';
-
-	getsym();
-		
-	addset(nxtlev, declbegsys, statbegsys, symnum);
-	nxtlev[period] = true;
-	block(0, 0, nxtlev);	/* 处理分程序 */
-		
-	if (sym != period)
-    {
-		error(9);
-    }
 	yyparse();
     if (err == 0) {
 		printf("\n===Parsing success!===\n");
 		fprintf(foutput,"\n===Parsing success!===\n");
 
-		if ((fcode = fopen("fcode.symbolTablePointt", "w")) == NULL)
+		if ((fcode = fopen("fcode.txt", "w")) == NULL)
 		{
-			printf("Can't open fcode.symbolTablePointt file!\n");
+			printf("Can't open fcode.txt file!\n");
 			exit(1);
 		}		
 
-		if ((fresult = fopen("fresult.symbolTablePointt", "w")) == NULL)
+		if ((fresult = fopen("fresult.txt", "w")) == NULL)
 		{
-			printf("Can't open fresult.symbolTablePointt file!\n");
+			printf("Can't open fresult.txt file!\n");
 			exit(1);
 		}
 		
