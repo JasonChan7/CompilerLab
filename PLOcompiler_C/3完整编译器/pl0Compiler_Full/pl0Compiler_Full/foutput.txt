@@ -1,8 +1,38 @@
-0 CONST A=1,b=2;
-**     ^11
-**     ^19
-**              ^8
-3 var x,y;
-**   ^9
+0 const a=84,b=36;
+**                 ^7
+1 var x,y,z,q,r;
+**               ^7
+1 procedure gcd;
+**               ^7
+2   var f,g;
+**           ^7
+2   begin
+**        ^19
+3     f:=x; g:=y;
+**                ^19
+5     while f#g do 
+**         ^10
+**                  ^19
+9       begin 
+**           ^10
+**             ^19
+10         if f<g then g:=g-f;
+**          ^10
+**                            ^19
+18         if g<f then f:=f-g;
+**          ^10
+**                            ^19
+26       end;
+**           ^19
+26     z:=f;
+**          ^19
+26   end;
+**       ^6
+27 
+27 begin
+**      ^19
+28    x:=a; y:=b; call gcd
+**                        ^19
+31 end.
 
-4 errors in pl/0 program!
+19 errors in pl/0 program!

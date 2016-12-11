@@ -5,7 +5,7 @@
 #include <malloc.h>
 #include "small.tab.h"
 int line = 1;
-void yyerror(char *);
+int yyerror(char *);
 %}
 %%
 \/\*(.|\n)*?\*\/ ; /* ignore comments */
@@ -37,7 +37,7 @@ void yyerror(char *);
 "call"      return CALL;
 "const"     return CONST;
 "var"       return VAR;
-"begin"     return BEGIN;
+"begin"     return MYBEGIN;
 "XOR"       return XOR;
 "ODD"       return ODD;
 "def"       return PROC;

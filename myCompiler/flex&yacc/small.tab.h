@@ -58,7 +58,7 @@ extern int yydebug;
     CALL = 268,
     CONST = 269,
     VAR = 270,
-    BEGIN = 271,
+    MYBEGIN = 271,
     XOR = 272,
     ODD = 273,
     PROC = 274,
@@ -83,11 +83,10 @@ union YYSTYPE
 {
 #line 93 "small.y" /* yacc.c:1909  */
 
-	bool tf; /* boolean value */
 	int integer; /* integer value */ 
 	char *ident; /* identifier */ 
 
-#line 91 "small.tab.h" /* yacc.c:1909  */
+#line 90 "small.tab.h" /* yacc.c:1909  */
 };
 # define YYSTYPE_IS_TRIVIAL 1
 # define YYSTYPE_IS_DECLARED 1

@@ -516,7 +516,7 @@ char *yytext;
 #include <malloc.h>
 #include "small.tab.h"
 int line = 1;
-void yyerror(char *);
+int yyerror(char *);
 #line 521 "lex.yy.c"
 
 #define INITIAL 0
@@ -911,7 +911,7 @@ return VAR;
 case 23:
 YY_RULE_SETUP
 #line 40 "small.l"
-return BEGIN;
+return MYBEGIN;
 	YY_BREAK
 case 24:
 YY_RULE_SETUP

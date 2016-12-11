@@ -1,0 +1,5 @@
+const a := 10, b := 20;
+var c, d;
+c := a+b;
+d := a-b;
+c := c%d;

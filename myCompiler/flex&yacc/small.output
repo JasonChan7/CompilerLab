@@ -1,0 +1,1717 @@
+Terminals unused in grammar
+
+   IFX
+
+
+Grammar
+
+    0 $accept: program $end
+
+    1 program: block
+
+    2 @1: %empty
+
+    3 $@2: %empty
+
+    4 $@3: %empty
+
+    5 block: @1 get_table_addr const_decl var_decl $@2 proc_decls $@3 stmt_sequence
+
+    6 get_table_addr: %empty
+
+    7 get_code_addr: %empty
+
+    8 const_decl: CONST const_list ';'
+    9           | %empty
+
+   10 const_list: const_def
+   11           | const_list ',' const_def
+
+   12 const_def: IDENT BC INTEGER
+
+   13 var_decl: VAR var_list ';'
+   14         | %empty
+
+   15 var_list: var_def
+   16         | var_list ',' var_def
+
+   17 var_def: IDENT
+
+   18 proc_decls: proc_decls proc_decl MYBEGIN proc_body END decrease_procTablePoint
+   19           | %empty
+
+   20 proc_decl: increase_procTablePoint PROC IDENT increase_level '(' para_list ')' ';'
+
+   21 para_list: para_stmt
+   22          | %empty
+
+   23 para_stmt: IDENT
+   24          | para_stmt ',' IDENT
+
+   25 proc_body: block decrease_level
+
+   26 increase_procTablePoint: %empty
+
+   27 decrease_level: %empty
+
+   28 decrease_procTablePoint: %empty
+
+   29 increase_level: %empty
+
+   30 stmt_sequence: stmt_sequence ';' statement
+   31              | statement
+
+   32 statement: if_stmt
+   33          | repeat_stmt
+   34          | assign_stmt
+   35          | read_stmt
+   36          | write_stmt
+   37          | while_stmt
+   38          | call_stmt
+
+   39 if_stmt: if_stmt_no_else END
+
+   40 $@4: %empty
+
+   41 if_stmt: if_stmt_no_else get_code_addr $@4 ELSE stmt_sequence END
+
+   42 @5: %empty
+
+   43 if_stmt_no_else: IF expr get_code_addr @5 THEN stmt_sequence
+
+   44 repeat_stmt: REPEAT get_code_addr stmt_sequence UNTIL expr
+
+   45 assign_stmt: identifier BC expr
+
+   46 read_stmt: READ identifier
+
+   47 write_stmt: WRITE expr
+
+   48 $@6: %empty
+
+   49 while_stmt: WHILE get_code_addr '(' expr ')' get_code_addr $@6 DO MYBEGIN stmt_sequence END
+
+   50 call_stmt: CALL proc_identifier '(' arg_list ')'
+
+   51 arg_list: arg_stmt
+   52         | %empty
+
+   53 arg_stmt: identifier
+   54         | arg_stmt ',' identifier
+
+   55 expr: simple_expr
+   56     | ODD simple_expr
+   57     | simple_expr EQ simple_expr
+   58     | simple_expr NE simple_expr
+   59     | simple_expr LT simple_expr
+   60     | simple_expr GE simple_expr
+   61     | simple_expr GT simple_expr
+   62     | simple_expr LE simple_expr
+
+   63 simple_expr: '-' simple_expr
+   64            | simple_expr '+' simple_expr
+   65            | simple_expr '-' simple_expr
+   66            | simple_expr '*' simple_expr
+   67            | simple_expr '/' simple_expr
+   68            | simple_expr '%' simple_expr
+   69            | simple_expr XOR simple_expr
+   70            | '(' expr ')'
+   71            | INTEGER
+   72            | IDENT
+
+   73 identifier: IDENT
+
+   74 proc_identifier: IDENT
+
+
+Terminals, with rules where they appear
+
+$end (0) 0
+'%' (37) 68
+'(' (40) 20 49 50 70
+')' (41) 20 49 50 70
+'*' (42) 66
+'+' (43) 64
+',' (44) 11 16 24 54
+'-' (45) 63 65
+'/' (47) 67
+';' (59) 8 13 20 30
+error (256)
+IDENT (258) 12 17 20 23 24 72 73 74
+INTEGER (259) 12 71
+IF (260) 43
+THEN (261) 43
+ELSE (262) 41
+END (263) 18 39 41 49
+REPEAT (264) 44
+UNTIL (265) 44
+READ (266) 46
+WRITE (267) 47
+CALL (268) 50
+CONST (269) 8
+VAR (270) 13
+MYBEGIN (271) 18 49
+XOR (272) 69
+ODD (273) 56
+PROC (274) 20
+WHILE (275) 49
+DO (276) 49
+IFX (277)
+BC (278) 12 45
+GT (279) 61
+LT (280) 59
+GE (281) 60
+LE (282) 62
+EQ (283) 57
+NE (284) 58
+UMINUS (285)
+
+
+Nonterminals, with rules where they appear
+
+$accept (40)
+    on left: 0
+program (41)
+    on left: 1, on right: 0
+block (42)
+    on left: 5, on right: 1 25
+@1 (43)
+    on left: 2, on right: 5
+$@2 (44)
+    on left: 3, on right: 5
+$@3 (45)
+    on left: 4, on right: 5
+get_table_addr (46)
+    on left: 6, on right: 5
+get_code_addr (47)
+    on left: 7, on right: 41 43 44 49
+const_decl (48)
+    on left: 8 9, on right: 5
+const_list (49)
+    on left: 10 11, on right: 8 11
+const_def (50)
+    on left: 12, on right: 10 11
+var_decl (51)
+    on left: 13 14, on right: 5
+var_list (52)
+    on left: 15 16, on right: 13 16
+var_def (53)
+    on left: 17, on right: 15 16
+proc_decls (54)
+    on left: 18 19, on right: 5 18
+proc_decl (55)
+    on left: 20, on right: 18
+para_list (56)
+    on left: 21 22, on right: 20
+para_stmt (57)
+    on left: 23 24, on right: 21 24
+proc_body (58)
+    on left: 25, on right: 18
+increase_procTablePoint (59)
+    on left: 26, on right: 20
+decrease_level (60)
+    on left: 27, on right: 25
+decrease_procTablePoint (61)
+    on left: 28, on right: 18
+increase_level (62)
+    on left: 29, on right: 20
+stmt_sequence (63)
+    on left: 30 31, on right: 5 30 41 43 44 49
+statement (64)
+    on left: 32 33 34 35 36 37 38, on right: 30 31
+if_stmt (65)
+    on left: 39 41, on right: 32
+$@4 (66)
+    on left: 40, on right: 41
+if_stmt_no_else (67)
+    on left: 43, on right: 39 41
+@5 (68)
+    on left: 42, on right: 43
+repeat_stmt (69)
+    on left: 44, on right: 33
+assign_stmt (70)
+    on left: 45, on right: 34
+read_stmt (71)
+    on left: 46, on right: 35
+write_stmt (72)
+    on left: 47, on right: 36
+while_stmt (73)
+    on left: 49, on right: 37
+$@6 (74)
+    on left: 48, on right: 49
+call_stmt (75)
+    on left: 50, on right: 38
+arg_list (76)
+    on left: 51 52, on right: 50
+arg_stmt (77)
+    on left: 53 54, on right: 51 54
+expr (78)
+    on left: 55 56 57 58 59 60 61 62, on right: 43 44 45 47 49 70
+simple_expr (79)
+    on left: 63 64 65 66 67 68 69 70 71 72, on right: 55 56 57 58 59
+    60 61 62 63 64 65 66 67 68 69
+identifier (80)
+    on left: 73, on right: 45 46 53 54
+proc_identifier (81)
+    on left: 74, on right: 50
+
+
+State 0
+
+    0 $accept: . program $end
+
+    $default  reduce using rule 2 (@1)
+
+    program  go to state 1
+    block    go to state 2
+    @1       go to state 3
+
+
+State 1
+
+    0 $accept: program . $end
+
+    $end  shift, and go to state 4
+
+
+State 2
+
+    1 program: block .
+
+    $default  reduce using rule 1 (program)
+
+
+State 3
+
+    5 block: @1 . get_table_addr const_decl var_decl $@2 proc_decls $@3 stmt_sequence
+
+    $default  reduce using rule 6 (get_table_addr)
+
+    get_table_addr  go to state 5
+
+
+State 4
+
+    0 $accept: program $end .
+
+    $default  accept
+
+
+State 5
+
+    5 block: @1 get_table_addr . const_decl var_decl $@2 proc_decls $@3 stmt_sequence
+
+    CONST  shift, and go to state 6
+
+    $default  reduce using rule 9 (const_decl)
+
+    const_decl  go to state 7
+
+
+State 6
+
+    8 const_decl: CONST . const_list ';'
+
+    IDENT  shift, and go to state 8
+
+    const_list  go to state 9
+    const_def   go to state 10
+
+
+State 7
+
+    5 block: @1 get_table_addr const_decl . var_decl $@2 proc_decls $@3 stmt_sequence
+
+    VAR  shift, and go to state 11
+
+    $default  reduce using rule 14 (var_decl)
+
+    var_decl  go to state 12
+
+
+State 8
+
+   12 const_def: IDENT . BC INTEGER
+
+    BC  shift, and go to state 13
+
+
+State 9
+
+    8 const_decl: CONST const_list . ';'
+   11 const_list: const_list . ',' const_def
+
+    ';'  shift, and go to state 14
+    ','  shift, and go to state 15
+
+
+State 10
+
+   10 const_list: const_def .
+
+    $default  reduce using rule 10 (const_list)
+
+
+State 11
+
+   13 var_decl: VAR . var_list ';'
+
+    IDENT  shift, and go to state 16
+
+    var_list  go to state 17
+    var_def   go to state 18
+
+
+State 12
+
+    5 block: @1 get_table_addr const_decl var_decl . $@2 proc_decls $@3 stmt_sequence
+
+    $default  reduce using rule 3 ($@2)
+
+    $@2  go to state 19
+
+
+State 13
+
+   12 const_def: IDENT BC . INTEGER
+
+    INTEGER  shift, and go to state 20
+
+
+State 14
+
+    8 const_decl: CONST const_list ';' .
+
+    $default  reduce using rule 8 (const_decl)
+
+
+State 15
+
+   11 const_list: const_list ',' . const_def
+
+    IDENT  shift, and go to state 8
+
+    const_def  go to state 21
+
+
+State 16
+
+   17 var_def: IDENT .
+
+    $default  reduce using rule 17 (var_def)
+
+
+State 17
+
+   13 var_decl: VAR var_list . ';'
+   16 var_list: var_list . ',' var_def
+
+    ';'  shift, and go to state 22
+    ','  shift, and go to state 23
+
+
+State 18
+
+   15 var_list: var_def .
+
+    $default  reduce using rule 15 (var_list)
+
+
+State 19
+
+    5 block: @1 get_table_addr const_decl var_decl $@2 . proc_decls $@3 stmt_sequence
+
+    $default  reduce using rule 19 (proc_decls)
+
+    proc_decls  go to state 24
+
+
+State 20
+
+   12 const_def: IDENT BC INTEGER .
+
+    $default  reduce using rule 12 (const_def)
+
+
+State 21
+
+   11 const_list: const_list ',' const_def .
+
+    $default  reduce using rule 11 (const_list)
+
+
+State 22
+
+   13 var_decl: VAR var_list ';' .
+
+    $default  reduce using rule 13 (var_decl)
+
+
+State 23
+
+   16 var_list: var_list ',' . var_def
+
+    IDENT  shift, and go to state 16
+
+    var_def  go to state 25
+
+
+State 24
+
+    5 block: @1 get_table_addr const_decl var_decl $@2 proc_decls . $@3 stmt_sequence
+   18 proc_decls: proc_decls . proc_decl MYBEGIN proc_body END decrease_procTablePoint
+
+    PROC      reduce using rule 26 (increase_procTablePoint)
+    $default  reduce using rule 4 ($@3)
+
+    $@3                      go to state 26
+    proc_decl                go to state 27
+    increase_procTablePoint  go to state 28
+
+
+State 25
+
+   16 var_list: var_list ',' var_def .
+
+    $default  reduce using rule 16 (var_list)
+
+
+State 26
+
+    5 block: @1 get_table_addr const_decl var_decl $@2 proc_decls $@3 . stmt_sequence
+
+    IDENT   shift, and go to state 29
+    IF      shift, and go to state 30
+    REPEAT  shift, and go to state 31
+    READ    shift, and go to state 32
+    WRITE   shift, and go to state 33
+    CALL    shift, and go to state 34
+    WHILE   shift, and go to state 35
+
+    stmt_sequence    go to state 36
+    statement        go to state 37
+    if_stmt          go to state 38
+    if_stmt_no_else  go to state 39
+    repeat_stmt      go to state 40
+    assign_stmt      go to state 41
+    read_stmt        go to state 42
+    write_stmt       go to state 43
+    while_stmt       go to state 44
+    call_stmt        go to state 45
+    identifier       go to state 46
+
+
+State 27
+
+   18 proc_decls: proc_decls proc_decl . MYBEGIN proc_body END decrease_procTablePoint
+
+    MYBEGIN  shift, and go to state 47
+
+
+State 28
+
+   20 proc_decl: increase_procTablePoint . PROC IDENT increase_level '(' para_list ')' ';'
+
+    PROC  shift, and go to state 48
+
+
+State 29
+
+   73 identifier: IDENT .
+
+    $default  reduce using rule 73 (identifier)
+
+
+State 30
+
+   43 if_stmt_no_else: IF . expr get_code_addr @5 THEN stmt_sequence
+
+    IDENT    shift, and go to state 49
+    INTEGER  shift, and go to state 50
+    ODD      shift, and go to state 51
+    '-'      shift, and go to state 52
+    '('      shift, and go to state 53
+
+    expr         go to state 54
+    simple_expr  go to state 55
+
+
+State 31
+
+   44 repeat_stmt: REPEAT . get_code_addr stmt_sequence UNTIL expr
+
+    $default  reduce using rule 7 (get_code_addr)
+
+    get_code_addr  go to state 56
+
+
+State 32
+
+   46 read_stmt: READ . identifier
+
+    IDENT  shift, and go to state 29
+
+    identifier  go to state 57
+
+
+State 33
+
+   47 write_stmt: WRITE . expr
+
+    IDENT    shift, and go to state 49
+    INTEGER  shift, and go to state 50
+    ODD      shift, and go to state 51
+    '-'      shift, and go to state 52
+    '('      shift, and go to state 53
+
+    expr         go to state 58
+    simple_expr  go to state 55
+
+
+State 34
+
+   50 call_stmt: CALL . proc_identifier '(' arg_list ')'
+
+    IDENT  shift, and go to state 59
+
+    proc_identifier  go to state 60
+
+
+State 35
+
+   49 while_stmt: WHILE . get_code_addr '(' expr ')' get_code_addr $@6 DO MYBEGIN stmt_sequence END
+
+    $default  reduce using rule 7 (get_code_addr)
+
+    get_code_addr  go to state 61
+
+
+State 36
+
+    5 block: @1 get_table_addr const_decl var_decl $@2 proc_decls $@3 stmt_sequence .
+   30 stmt_sequence: stmt_sequence . ';' statement
+
+    ';'  shift, and go to state 62
+
+    $default  reduce using rule 5 (block)
+
+
+State 37
+
+   31 stmt_sequence: statement .
+
+    $default  reduce using rule 31 (stmt_sequence)
+
+
+State 38
+
+   32 statement: if_stmt .
+
+    $default  reduce using rule 32 (statement)
+
+
+State 39
+
+   39 if_stmt: if_stmt_no_else . END
+   41        | if_stmt_no_else . get_code_addr $@4 ELSE stmt_sequence END
+
+    END  shift, and go to state 63
+
+    $default  reduce using rule 7 (get_code_addr)
+
+    get_code_addr  go to state 64
+
+
+State 40
+
+   33 statement: repeat_stmt .
+
+    $default  reduce using rule 33 (statement)
+
+
+State 41
+
+   34 statement: assign_stmt .
+
+    $default  reduce using rule 34 (statement)
+
+
+State 42
+
+   35 statement: read_stmt .
+
+    $default  reduce using rule 35 (statement)
+
+
+State 43
+
+   36 statement: write_stmt .
+
+    $default  reduce using rule 36 (statement)
+
+
+State 44
+
+   37 statement: while_stmt .
+
+    $default  reduce using rule 37 (statement)
+
+
+State 45
+
+   38 statement: call_stmt .
+
+    $default  reduce using rule 38 (statement)
+
+
+State 46
+
+   45 assign_stmt: identifier . BC expr
+
+    BC  shift, and go to state 65
+
+
+State 47
+
+   18 proc_decls: proc_decls proc_decl MYBEGIN . proc_body END decrease_procTablePoint
+
+    $default  reduce using rule 2 (@1)
+
+    block      go to state 66
+    @1         go to state 3
+    proc_body  go to state 67
+
+
+State 48
+
+   20 proc_decl: increase_procTablePoint PROC . IDENT increase_level '(' para_list ')' ';'
+
+    IDENT  shift, and go to state 68
+
+
+State 49
+
+   72 simple_expr: IDENT .
+
+    $default  reduce using rule 72 (simple_expr)
+
+
+State 50
+
+   71 simple_expr: INTEGER .
+
+    $default  reduce using rule 71 (simple_expr)
+
+
+State 51
+
+   56 expr: ODD . simple_expr
+
+    IDENT    shift, and go to state 49
+    INTEGER  shift, and go to state 50
+    '-'      shift, and go to state 52
+    '('      shift, and go to state 53
+
+    simple_expr  go to state 69
+
+
+State 52
+
+   63 simple_expr: '-' . simple_expr
+
+    IDENT    shift, and go to state 49
+    INTEGER  shift, and go to state 50
+    '-'      shift, and go to state 52
+    '('      shift, and go to state 53
+
+    simple_expr  go to state 70
+
+
+State 53
+
+   70 simple_expr: '(' . expr ')'
+
+    IDENT    shift, and go to state 49
+    INTEGER  shift, and go to state 50
+    ODD      shift, and go to state 51
+    '-'      shift, and go to state 52
+    '('      shift, and go to state 53
+
+    expr         go to state 71
+    simple_expr  go to state 55
+
+
+State 54
+
+   43 if_stmt_no_else: IF expr . get_code_addr @5 THEN stmt_sequence
+
+    $default  reduce using rule 7 (get_code_addr)
+
+    get_code_addr  go to state 72
+
+
+State 55
+
+   55 expr: simple_expr .
+   57     | simple_expr . EQ simple_expr
+   58     | simple_expr . NE simple_expr
+   59     | simple_expr . LT simple_expr
+   60     | simple_expr . GE simple_expr
+   61     | simple_expr . GT simple_expr
+   62     | simple_expr . LE simple_expr
+   64 simple_expr: simple_expr . '+' simple_expr
+   65            | simple_expr . '-' simple_expr
+   66            | simple_expr . '*' simple_expr
+   67            | simple_expr . '/' simple_expr
+   68            | simple_expr . '%' simple_expr
+   69            | simple_expr . XOR simple_expr
+
+    XOR  shift, and go to state 73
+    GT   shift, and go to state 74
+    LT   shift, and go to state 75
+    GE   shift, and go to state 76
+    LE   shift, and go to state 77
+    EQ   shift, and go to state 78
+    NE   shift, and go to state 79
+    '+'  shift, and go to state 80
+    '-'  shift, and go to state 81
+    '*'  shift, and go to state 82
+    '/'  shift, and go to state 83
+    '%'  shift, and go to state 84
+
+    $default  reduce using rule 55 (expr)
+
+
+State 56
+
+   44 repeat_stmt: REPEAT get_code_addr . stmt_sequence UNTIL expr
+
+    IDENT   shift, and go to state 29
+    IF      shift, and go to state 30
+    REPEAT  shift, and go to state 31
+    READ    shift, and go to state 32
+    WRITE   shift, and go to state 33
+    CALL    shift, and go to state 34
+    WHILE   shift, and go to state 35
+
+    stmt_sequence    go to state 85
+    statement        go to state 37
+    if_stmt          go to state 38
+    if_stmt_no_else  go to state 39
+    repeat_stmt      go to state 40
+    assign_stmt      go to state 41
+    read_stmt        go to state 42
+    write_stmt       go to state 43
+    while_stmt       go to state 44
+    call_stmt        go to state 45
+    identifier       go to state 46
+
+
+State 57
+
+   46 read_stmt: READ identifier .
+
+    $default  reduce using rule 46 (read_stmt)
+
+
+State 58
+
+   47 write_stmt: WRITE expr .
+
+    $default  reduce using rule 47 (write_stmt)
+
+
+State 59
+
+   74 proc_identifier: IDENT .
+
+    $default  reduce using rule 74 (proc_identifier)
+
+
+State 60
+
+   50 call_stmt: CALL proc_identifier . '(' arg_list ')'
+
+    '('  shift, and go to state 86
+
+
+State 61
+
+   49 while_stmt: WHILE get_code_addr . '(' expr ')' get_code_addr $@6 DO MYBEGIN stmt_sequence END
+
+    '('  shift, and go to state 87
+
+
+State 62
+
+   30 stmt_sequence: stmt_sequence ';' . statement
+
+    IDENT   shift, and go to state 29
+    IF      shift, and go to state 30
+    REPEAT  shift, and go to state 31
+    READ    shift, and go to state 32
+    WRITE   shift, and go to state 33
+    CALL    shift, and go to state 34
+    WHILE   shift, and go to state 35
+
+    statement        go to state 88
+    if_stmt          go to state 38
+    if_stmt_no_else  go to state 39
+    repeat_stmt      go to state 40
+    assign_stmt      go to state 41
+    read_stmt        go to state 42
+    write_stmt       go to state 43
+    while_stmt       go to state 44
+    call_stmt        go to state 45
+    identifier       go to state 46
+
+
+State 63
+
+   39 if_stmt: if_stmt_no_else END .
+
+    $default  reduce using rule 39 (if_stmt)
+
+
+State 64
+
+   41 if_stmt: if_stmt_no_else get_code_addr . $@4 ELSE stmt_sequence END
+
+    $default  reduce using rule 40 ($@4)
+
+    $@4  go to state 89
+
+
+State 65
+
+   45 assign_stmt: identifier BC . expr
+
+    IDENT    shift, and go to state 49
+    INTEGER  shift, and go to state 50
+    ODD      shift, and go to state 51
+    '-'      shift, and go to state 52
+    '('      shift, and go to state 53
+
+    expr         go to state 90
+    simple_expr  go to state 55
+
+
+State 66
+
+   25 proc_body: block . decrease_level
+
+    $default  reduce using rule 27 (decrease_level)
+
+    decrease_level  go to state 91
+
+
+State 67
+
+   18 proc_decls: proc_decls proc_decl MYBEGIN proc_body . END decrease_procTablePoint
+
+    END  shift, and go to state 92
+
+
+State 68
+
+   20 proc_decl: increase_procTablePoint PROC IDENT . increase_level '(' para_list ')' ';'
+
+    $default  reduce using rule 29 (increase_level)
+
+    increase_level  go to state 93
+
+
+State 69
+
+   56 expr: ODD simple_expr .
+   64 simple_expr: simple_expr . '+' simple_expr
+   65            | simple_expr . '-' simple_expr
+   66            | simple_expr . '*' simple_expr
+   67            | simple_expr . '/' simple_expr
+   68            | simple_expr . '%' simple_expr
+   69            | simple_expr . XOR simple_expr
+
+    XOR  shift, and go to state 73
+    '+'  shift, and go to state 80
+    '-'  shift, and go to state 81
+    '*'  shift, and go to state 82
+    '/'  shift, and go to state 83
+    '%'  shift, and go to state 84
+
+    $default  reduce using rule 56 (expr)
+
+
+State 70
+
+   63 simple_expr: '-' simple_expr .
+   64            | simple_expr . '+' simple_expr
+   65            | simple_expr . '-' simple_expr
+   66            | simple_expr . '*' simple_expr
+   67            | simple_expr . '/' simple_expr
+   68            | simple_expr . '%' simple_expr
+   69            | simple_expr . XOR simple_expr
+
+    $default  reduce using rule 63 (simple_expr)
+
+
+State 71
+
+   70 simple_expr: '(' expr . ')'
+
+    ')'  shift, and go to state 94
+
+
+State 72
+
+   43 if_stmt_no_else: IF expr get_code_addr . @5 THEN stmt_sequence
+
+    $default  reduce using rule 42 (@5)
+
+    @5  go to state 95
+
+
+State 73
+
+   69 simple_expr: simple_expr XOR . simple_expr
+
+    IDENT    shift, and go to state 49
+    INTEGER  shift, and go to state 50
+    '-'      shift, and go to state 52
+    '('      shift, and go to state 53
+
+    simple_expr  go to state 96
+
+
+State 74
+
+   61 expr: simple_expr GT . simple_expr
+
+    IDENT    shift, and go to state 49
+    INTEGER  shift, and go to state 50
+    '-'      shift, and go to state 52
+    '('      shift, and go to state 53
+
+    simple_expr  go to state 97
+
+
+State 75
+
+   59 expr: simple_expr LT . simple_expr
+
+    IDENT    shift, and go to state 49
+    INTEGER  shift, and go to state 50
+    '-'      shift, and go to state 52
+    '('      shift, and go to state 53
+
+    simple_expr  go to state 98
+
+
+State 76
+
+   60 expr: simple_expr GE . simple_expr
+
+    IDENT    shift, and go to state 49
+    INTEGER  shift, and go to state 50
+    '-'      shift, and go to state 52
+    '('      shift, and go to state 53
+
+    simple_expr  go to state 99
+
+
+State 77
+
+   62 expr: simple_expr LE . simple_expr
+
+    IDENT    shift, and go to state 49
+    INTEGER  shift, and go to state 50
+    '-'      shift, and go to state 52
+    '('      shift, and go to state 53
+
+    simple_expr  go to state 100
+
+
+State 78
+
+   57 expr: simple_expr EQ . simple_expr
+
+    IDENT    shift, and go to state 49
+    INTEGER  shift, and go to state 50
+    '-'      shift, and go to state 52
+    '('      shift, and go to state 53
+
+    simple_expr  go to state 101
+
+
+State 79
+
+   58 expr: simple_expr NE . simple_expr
+
+    IDENT    shift, and go to state 49
+    INTEGER  shift, and go to state 50
+    '-'      shift, and go to state 52
+    '('      shift, and go to state 53
+
+    simple_expr  go to state 102
+
+
+State 80
+
+   64 simple_expr: simple_expr '+' . simple_expr
+
+    IDENT    shift, and go to state 49
+    INTEGER  shift, and go to state 50
+    '-'      shift, and go to state 52
+    '('      shift, and go to state 53
+
+    simple_expr  go to state 103
+
+
+State 81
+
+   65 simple_expr: simple_expr '-' . simple_expr
+
+    IDENT    shift, and go to state 49
+    INTEGER  shift, and go to state 50
+    '-'      shift, and go to state 52
+    '('      shift, and go to state 53
+
+    simple_expr  go to state 104
+
+
+State 82
+
+   66 simple_expr: simple_expr '*' . simple_expr
+
+    IDENT    shift, and go to state 49
+    INTEGER  shift, and go to state 50
+    '-'      shift, and go to state 52
+    '('      shift, and go to state 53
+
+    simple_expr  go to state 105
+
+
+State 83
+
+   67 simple_expr: simple_expr '/' . simple_expr
+
+    IDENT    shift, and go to state 49
+    INTEGER  shift, and go to state 50
+    '-'      shift, and go to state 52
+    '('      shift, and go to state 53
+
+    simple_expr  go to state 106
+
+
+State 84
+
+   68 simple_expr: simple_expr '%' . simple_expr
+
+    IDENT    shift, and go to state 49
+    INTEGER  shift, and go to state 50
+    '-'      shift, and go to state 52
+    '('      shift, and go to state 53
+
+    simple_expr  go to state 107
+
+
+State 85
+
+   30 stmt_sequence: stmt_sequence . ';' statement
+   44 repeat_stmt: REPEAT get_code_addr stmt_sequence . UNTIL expr
+
+    UNTIL  shift, and go to state 108
+    ';'    shift, and go to state 62
+
+
+State 86
+
+   50 call_stmt: CALL proc_identifier '(' . arg_list ')'
+
+    IDENT  shift, and go to state 29
+
+    $default  reduce using rule 52 (arg_list)
+
+    arg_list    go to state 109
+    arg_stmt    go to state 110
+    identifier  go to state 111
+
+
+State 87
+
+   49 while_stmt: WHILE get_code_addr '(' . expr ')' get_code_addr $@6 DO MYBEGIN stmt_sequence END
+
+    IDENT    shift, and go to state 49
+    INTEGER  shift, and go to state 50
+    ODD      shift, and go to state 51
+    '-'      shift, and go to state 52
+    '('      shift, and go to state 53
+
+    expr         go to state 112
+    simple_expr  go to state 55
+
+
+State 88
+
+   30 stmt_sequence: stmt_sequence ';' statement .
+
+    $default  reduce using rule 30 (stmt_sequence)
+
+
+State 89
+
+   41 if_stmt: if_stmt_no_else get_code_addr $@4 . ELSE stmt_sequence END
+
+    ELSE  shift, and go to state 113
+
+
+State 90
+
+   45 assign_stmt: identifier BC expr .
+
+    $default  reduce using rule 45 (assign_stmt)
+
+
+State 91
+
+   25 proc_body: block decrease_level .
+
+    $default  reduce using rule 25 (proc_body)
+
+
+State 92
+
+   18 proc_decls: proc_decls proc_decl MYBEGIN proc_body END . decrease_procTablePoint
+
+    $default  reduce using rule 28 (decrease_procTablePoint)
+
+    decrease_procTablePoint  go to state 114
+
+
+State 93
+
+   20 proc_decl: increase_procTablePoint PROC IDENT increase_level . '(' para_list ')' ';'
+
+    '('  shift, and go to state 115
+
+
+State 94
+
+   70 simple_expr: '(' expr ')' .
+
+    $default  reduce using rule 70 (simple_expr)
+
+
+State 95
+
+   43 if_stmt_no_else: IF expr get_code_addr @5 . THEN stmt_sequence
+
+    THEN  shift, and go to state 116
+
+
+State 96
+
+   64 simple_expr: simple_expr . '+' simple_expr
+   65            | simple_expr . '-' simple_expr
+   66            | simple_expr . '*' simple_expr
+   67            | simple_expr . '/' simple_expr
+   68            | simple_expr . '%' simple_expr
+   69            | simple_expr . XOR simple_expr
+   69            | simple_expr XOR simple_expr .
+
+    $default  reduce using rule 69 (simple_expr)
+
+
+State 97
+
+   61 expr: simple_expr GT simple_expr .
+   64 simple_expr: simple_expr . '+' simple_expr
+   65            | simple_expr . '-' simple_expr
+   66            | simple_expr . '*' simple_expr
+   67            | simple_expr . '/' simple_expr
+   68            | simple_expr . '%' simple_expr
+   69            | simple_expr . XOR simple_expr
+
+    XOR  shift, and go to state 73
+    '+'  shift, and go to state 80
+    '-'  shift, and go to state 81
+    '*'  shift, and go to state 82
+    '/'  shift, and go to state 83
+    '%'  shift, and go to state 84
+
+    $default  reduce using rule 61 (expr)
+
+
+State 98
+
+   59 expr: simple_expr LT simple_expr .
+   64 simple_expr: simple_expr . '+' simple_expr
+   65            | simple_expr . '-' simple_expr
+   66            | simple_expr . '*' simple_expr
+   67            | simple_expr . '/' simple_expr
+   68            | simple_expr . '%' simple_expr
+   69            | simple_expr . XOR simple_expr
+
+    XOR  shift, and go to state 73
+    '+'  shift, and go to state 80
+    '-'  shift, and go to state 81
+    '*'  shift, and go to state 82
+    '/'  shift, and go to state 83
+    '%'  shift, and go to state 84
+
+    $default  reduce using rule 59 (expr)
+
+
+State 99
+
+   60 expr: simple_expr GE simple_expr .
+   64 simple_expr: simple_expr . '+' simple_expr
+   65            | simple_expr . '-' simple_expr
+   66            | simple_expr . '*' simple_expr
+   67            | simple_expr . '/' simple_expr
+   68            | simple_expr . '%' simple_expr
+   69            | simple_expr . XOR simple_expr
+
+    XOR  shift, and go to state 73
+    '+'  shift, and go to state 80
+    '-'  shift, and go to state 81
+    '*'  shift, and go to state 82
+    '/'  shift, and go to state 83
+    '%'  shift, and go to state 84
+
+    $default  reduce using rule 60 (expr)
+
+
+State 100
+
+   62 expr: simple_expr LE simple_expr .
+   64 simple_expr: simple_expr . '+' simple_expr
+   65            | simple_expr . '-' simple_expr
+   66            | simple_expr . '*' simple_expr
+   67            | simple_expr . '/' simple_expr
+   68            | simple_expr . '%' simple_expr
+   69            | simple_expr . XOR simple_expr
+
+    XOR  shift, and go to state 73
+    '+'  shift, and go to state 80
+    '-'  shift, and go to state 81
+    '*'  shift, and go to state 82
+    '/'  shift, and go to state 83
+    '%'  shift, and go to state 84
+
+    $default  reduce using rule 62 (expr)
+
+
+State 101
+
+   57 expr: simple_expr EQ simple_expr .
+   64 simple_expr: simple_expr . '+' simple_expr
+   65            | simple_expr . '-' simple_expr
+   66            | simple_expr . '*' simple_expr
+   67            | simple_expr . '/' simple_expr
+   68            | simple_expr . '%' simple_expr
+   69            | simple_expr . XOR simple_expr
+
+    XOR  shift, and go to state 73
+    '+'  shift, and go to state 80
+    '-'  shift, and go to state 81
+    '*'  shift, and go to state 82
+    '/'  shift, and go to state 83
+    '%'  shift, and go to state 84
+
+    $default  reduce using rule 57 (expr)
+
+
+State 102
+
+   58 expr: simple_expr NE simple_expr .
+   64 simple_expr: simple_expr . '+' simple_expr
+   65            | simple_expr . '-' simple_expr
+   66            | simple_expr . '*' simple_expr
+   67            | simple_expr . '/' simple_expr
+   68            | simple_expr . '%' simple_expr
+   69            | simple_expr . XOR simple_expr
+
+    XOR  shift, and go to state 73
+    '+'  shift, and go to state 80
+    '-'  shift, and go to state 81
+    '*'  shift, and go to state 82
+    '/'  shift, and go to state 83
+    '%'  shift, and go to state 84
+
+    $default  reduce using rule 58 (expr)
+
+
+State 103
+
+   64 simple_expr: simple_expr . '+' simple_expr
+   64            | simple_expr '+' simple_expr .
+   65            | simple_expr . '-' simple_expr
+   66            | simple_expr . '*' simple_expr
+   67            | simple_expr . '/' simple_expr
+   68            | simple_expr . '%' simple_expr
+   69            | simple_expr . XOR simple_expr
+
+    XOR  shift, and go to state 73
+    '*'  shift, and go to state 82
+    '/'  shift, and go to state 83
+    '%'  shift, and go to state 84
+
+    $default  reduce using rule 64 (simple_expr)
+
+
+State 104
+
+   64 simple_expr: simple_expr . '+' simple_expr
+   65            | simple_expr . '-' simple_expr
+   65            | simple_expr '-' simple_expr .
+   66            | simple_expr . '*' simple_expr
+   67            | simple_expr . '/' simple_expr
+   68            | simple_expr . '%' simple_expr
+   69            | simple_expr . XOR simple_expr
+
+    XOR  shift, and go to state 73
+    '*'  shift, and go to state 82
+    '/'  shift, and go to state 83
+    '%'  shift, and go to state 84
+
+    $default  reduce using rule 65 (simple_expr)
+
+
+State 105
+
+   64 simple_expr: simple_expr . '+' simple_expr
+   65            | simple_expr . '-' simple_expr
+   66            | simple_expr . '*' simple_expr
+   66            | simple_expr '*' simple_expr .
+   67            | simple_expr . '/' simple_expr
+   68            | simple_expr . '%' simple_expr
+   69            | simple_expr . XOR simple_expr
+
+    XOR  shift, and go to state 73
+
+    $default  reduce using rule 66 (simple_expr)
+
+
+State 106
+
+   64 simple_expr: simple_expr . '+' simple_expr
+   65            | simple_expr . '-' simple_expr
+   66            | simple_expr . '*' simple_expr
+   67            | simple_expr . '/' simple_expr
+   67            | simple_expr '/' simple_expr .
+   68            | simple_expr . '%' simple_expr
+   69            | simple_expr . XOR simple_expr
+
+    XOR  shift, and go to state 73
+
+    $default  reduce using rule 67 (simple_expr)
+
+
+State 107
+
+   64 simple_expr: simple_expr . '+' simple_expr
+   65            | simple_expr . '-' simple_expr
+   66            | simple_expr . '*' simple_expr
+   67            | simple_expr . '/' simple_expr
+   68            | simple_expr . '%' simple_expr
+   68            | simple_expr '%' simple_expr .
+   69            | simple_expr . XOR simple_expr
+
+    XOR  shift, and go to state 73
+
+    $default  reduce using rule 68 (simple_expr)
+
+
+State 108
+
+   44 repeat_stmt: REPEAT get_code_addr stmt_sequence UNTIL . expr
+
+    IDENT    shift, and go to state 49
+    INTEGER  shift, and go to state 50
+    ODD      shift, and go to state 51
+    '-'      shift, and go to state 52
+    '('      shift, and go to state 53
+
+    expr         go to state 117
+    simple_expr  go to state 55
+
+
+State 109
+
+   50 call_stmt: CALL proc_identifier '(' arg_list . ')'
+
+    ')'  shift, and go to state 118
+
+
+State 110
+
+   51 arg_list: arg_stmt .
+   54 arg_stmt: arg_stmt . ',' identifier
+
+    ','  shift, and go to state 119
+
+    $default  reduce using rule 51 (arg_list)
+
+
+State 111
+
+   53 arg_stmt: identifier .
+
+    $default  reduce using rule 53 (arg_stmt)
+
+
+State 112
+
+   49 while_stmt: WHILE get_code_addr '(' expr . ')' get_code_addr $@6 DO MYBEGIN stmt_sequence END
+
+    ')'  shift, and go to state 120
+
+
+State 113
+
+   41 if_stmt: if_stmt_no_else get_code_addr $@4 ELSE . stmt_sequence END
+
+    IDENT   shift, and go to state 29
+    IF      shift, and go to state 30
+    REPEAT  shift, and go to state 31
+    READ    shift, and go to state 32
+    WRITE   shift, and go to state 33
+    CALL    shift, and go to state 34
+    WHILE   shift, and go to state 35
+
+    stmt_sequence    go to state 121
+    statement        go to state 37
+    if_stmt          go to state 38
+    if_stmt_no_else  go to state 39
+    repeat_stmt      go to state 40
+    assign_stmt      go to state 41
+    read_stmt        go to state 42
+    write_stmt       go to state 43
+    while_stmt       go to state 44
+    call_stmt        go to state 45
+    identifier       go to state 46
+
+
+State 114
+
+   18 proc_decls: proc_decls proc_decl MYBEGIN proc_body END decrease_procTablePoint .
+
+    $default  reduce using rule 18 (proc_decls)
+
+
+State 115
+
+   20 proc_decl: increase_procTablePoint PROC IDENT increase_level '(' . para_list ')' ';'
+
+    IDENT  shift, and go to state 122
+
+    $default  reduce using rule 22 (para_list)
+
+    para_list  go to state 123
+    para_stmt  go to state 124
+
+
+State 116
+
+   43 if_stmt_no_else: IF expr get_code_addr @5 THEN . stmt_sequence
+
+    IDENT   shift, and go to state 29
+    IF      shift, and go to state 30
+    REPEAT  shift, and go to state 31
+    READ    shift, and go to state 32
+    WRITE   shift, and go to state 33
+    CALL    shift, and go to state 34
+    WHILE   shift, and go to state 35
+
+    stmt_sequence    go to state 125
+    statement        go to state 37
+    if_stmt          go to state 38
+    if_stmt_no_else  go to state 39
+    repeat_stmt      go to state 40
+    assign_stmt      go to state 41
+    read_stmt        go to state 42
+    write_stmt       go to state 43
+    while_stmt       go to state 44
+    call_stmt        go to state 45
+    identifier       go to state 46
+
+
+State 117
+
+   44 repeat_stmt: REPEAT get_code_addr stmt_sequence UNTIL expr .
+
+    $default  reduce using rule 44 (repeat_stmt)
+
+
+State 118
+
+   50 call_stmt: CALL proc_identifier '(' arg_list ')' .
+
+    $default  reduce using rule 50 (call_stmt)
+
+
+State 119
+
+   54 arg_stmt: arg_stmt ',' . identifier
+
+    IDENT  shift, and go to state 29
+
+    identifier  go to state 126
+
+
+State 120
+
+   49 while_stmt: WHILE get_code_addr '(' expr ')' . get_code_addr $@6 DO MYBEGIN stmt_sequence END
+
+    $default  reduce using rule 7 (get_code_addr)
+
+    get_code_addr  go to state 127
+
+
+State 121
+
+   30 stmt_sequence: stmt_sequence . ';' statement
+   41 if_stmt: if_stmt_no_else get_code_addr $@4 ELSE stmt_sequence . END
+
+    END  shift, and go to state 128
+    ';'  shift, and go to state 62
+
+
+State 122
+
+   23 para_stmt: IDENT .
+
+    $default  reduce using rule 23 (para_stmt)
+
+
+State 123
+
+   20 proc_decl: increase_procTablePoint PROC IDENT increase_level '(' para_list . ')' ';'
+
+    ')'  shift, and go to state 129
+
+
+State 124
+
+   21 para_list: para_stmt .
+   24 para_stmt: para_stmt . ',' IDENT
+
+    ','  shift, and go to state 130
+
+    $default  reduce using rule 21 (para_list)
+
+
+State 125
+
+   30 stmt_sequence: stmt_sequence . ';' statement
+   43 if_stmt_no_else: IF expr get_code_addr @5 THEN stmt_sequence .
+
+    ';'  shift, and go to state 62
+
+    $default  reduce using rule 43 (if_stmt_no_else)
+
+
+State 126
+
+   54 arg_stmt: arg_stmt ',' identifier .
+
+    $default  reduce using rule 54 (arg_stmt)
+
+
+State 127
+
+   49 while_stmt: WHILE get_code_addr '(' expr ')' get_code_addr . $@6 DO MYBEGIN stmt_sequence END
+
+    $default  reduce using rule 48 ($@6)
+
+    $@6  go to state 131
+
+
+State 128
+
+   41 if_stmt: if_stmt_no_else get_code_addr $@4 ELSE stmt_sequence END .
+
+    $default  reduce using rule 41 (if_stmt)
+
+
+State 129
+
+   20 proc_decl: increase_procTablePoint PROC IDENT increase_level '(' para_list ')' . ';'
+
+    ';'  shift, and go to state 132
+
+
+State 130
+
+   24 para_stmt: para_stmt ',' . IDENT
+
+    IDENT  shift, and go to state 133
+
+
+State 131
+
+   49 while_stmt: WHILE get_code_addr '(' expr ')' get_code_addr $@6 . DO MYBEGIN stmt_sequence END
+
+    DO  shift, and go to state 134
+
+
+State 132
+
+   20 proc_decl: increase_procTablePoint PROC IDENT increase_level '(' para_list ')' ';' .
+
+    $default  reduce using rule 20 (proc_decl)
+
+
+State 133
+
+   24 para_stmt: para_stmt ',' IDENT .
+
+    $default  reduce using rule 24 (para_stmt)
+
+
+State 134
+
+   49 while_stmt: WHILE get_code_addr '(' expr ')' get_code_addr $@6 DO . MYBEGIN stmt_sequence END
+
+    MYBEGIN  shift, and go to state 135
+
+
+State 135
+
+   49 while_stmt: WHILE get_code_addr '(' expr ')' get_code_addr $@6 DO MYBEGIN . stmt_sequence END
+
+    IDENT   shift, and go to state 29
+    IF      shift, and go to state 30
+    REPEAT  shift, and go to state 31
+    READ    shift, and go to state 32
+    WRITE   shift, and go to state 33
+    CALL    shift, and go to state 34
+    WHILE   shift, and go to state 35
+
+    stmt_sequence    go to state 136
+    statement        go to state 37
+    if_stmt          go to state 38
+    if_stmt_no_else  go to state 39
+    repeat_stmt      go to state 40
+    assign_stmt      go to state 41
+    read_stmt        go to state 42
+    write_stmt       go to state 43
+    while_stmt       go to state 44
+    call_stmt        go to state 45
+    identifier       go to state 46
+
+
+State 136
+
+   30 stmt_sequence: stmt_sequence . ';' statement
+   49 while_stmt: WHILE get_code_addr '(' expr ')' get_code_addr $@6 DO MYBEGIN stmt_sequence . END
+
+    END  shift, and go to state 137
+    ';'  shift, and go to state 62
+
+
+State 137
+
+   49 while_stmt: WHILE get_code_addr '(' expr ')' get_code_addr $@6 DO MYBEGIN stmt_sequence END .
+
+    $default  reduce using rule 49 (while_stmt)

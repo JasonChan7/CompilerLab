@@ -1,0 +1,17 @@
+const a:=10, b:=20;
+var c, d;
+def test();
+    begin
+        const A:=99, b:=100;
+        var x, y;
+        write A;
+        write b;
+        x:=99;
+        y:=100;
+        write x;
+        write y
+    end
+
+call test();
+write c;
+write d;

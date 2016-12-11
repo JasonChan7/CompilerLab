@@ -4,7 +4,7 @@
 	#include <string.h>
 	#include <malloc.h>
 	#include <memory.h>
-
+	
 	#define bool int
 	#define true 1
 	#define false 0
@@ -79,7 +79,6 @@
 	extern int line;
 	
 	int yylex(void);
-	void yyerror(char *);
 	void gen(enum fct x, int y, int z);
 	int position(char* idt);
 	void enter(enum object k);
@@ -89,20 +88,22 @@
 	void setdx(int n);
 	void listall();
 	void displaytable();
+	void outputStack(int *s, int t);
 %}
 %union {
-	bool tf; /* boolean value */
 	int integer; /* integer value */ 
 	char *ident; /* identifier */ 
 }
 %token <ident> IDENT
 %token <integer> INTEGER
-%token IF THEN ELSE END REPEAT UNTIL READ WRITE CALL CONST VAR BEGIN XOR ODD PROC WHILE DO
+%token IF THEN ELSE END REPEAT UNTIL READ WRITE CALL CONST VAR MYBEGIN XOR ODD PROC WHILE DO
 %nonassoc IFX
 %nonassoc ELSE
 %token BC GT LT GE LE EQ NE
 %left '+' '-'
 %left '*' '/' '%'
+%left XOR
+%left ODD
 %nonassoc UMINUS
 %type <integer> get_table_addr get_code_addr /* 记录本层标识符的初始位置 */
 %%
@@ -116,20 +117,22 @@ block: {
 	gen(jmp, 0, 0);
 } get_table_addr
   const_decl
-  var_decl {
-	  setdx($<integer>2+$<integer>3);
-  }
+  var_decl 
   proc_decls {
 	code[$<integer>1].a = codeTablePoint;
 
-	// table[$2].adr = codeTablePoint;
-	// table[$2].size = $4+3;
-	// gen(ini, 0, $4+3);
+	table[$<integer>1].adr = codeTablePoint;
+	table[$<integer>1].size = $<integer>3+3;
+	gen(ini, 0, $<integer>3+3);
 	displaytable();
-} stmt_sequence;
+} stmt_sequence {
+	gen(opr, 0, 0);
+	symbolTablePoint = proctable[procTablePoint];
+};
 
 get_table_addr: {
 	$<integer>$ = symbolTablePoint;
+	printf("table_addr: %d\n", symbolTablePoint);
 };
 get_code_addr: {
 	$<integer>$ = codeTablePoint; 
@@ -146,7 +149,7 @@ const_decl:
 	;
 const_list:
 	const_def {
-		$<integer>$ = $<integer>1;
+		$<integer>$ = 1;
 	}
 	| const_list ',' const_def {
 		$<integer>$ = $<integer>1+1;
@@ -165,6 +168,7 @@ const_def:
 var_decl: 
 	VAR var_list ';' {
 		$<integer>$ = $<integer>2;
+		setdx($<integer>2);
 	}
 	| {
 		$<integer>$ = 0;
@@ -172,10 +176,10 @@ var_decl:
 	;
 var_list:
 	var_def {
-		$<integer>$ = $<integer>1;
+		$<integer>$ = 1;
 	}
 	| var_list ',' var_def {
-		$<integer>$ = $<integer>1+$<integer>3;
+		$<integer>$ = $<integer>1+1;
 	}
 	;
 var_def:
@@ -188,8 +192,8 @@ var_def:
 
 /* 函数相关定义 */
 proc_decls: 
-	proc_decls proc_decl BEGIN proc_body END {
-		$<integer>$ = $<integer>$1+1;
+	proc_decls proc_decl MYBEGIN proc_body END decrease_procTablePoint {
+		$<integer>$ = $<integer>1+1;
 	}
 	| {
 		$<integer>$ = 0;
@@ -225,7 +229,7 @@ para_stmt:
 	}
 	;
 proc_body:
-	block decrease_level ';'
+	block decrease_level
 	;
 increase_procTablePoint: {
 	procTablePoint++;
@@ -257,20 +261,21 @@ statement:
 	| call_stmt
 	;
 if_stmt:
+	if_stmt_no_else END {
+		code[$<integer>1].a = codeTablePoint;
+	}
+	| if_stmt_no_else get_code_addr {
+		gen(jmp, 0, 0);
+		code[$<integer>1].a = codeTablePoint;
+	} ELSE stmt_sequence END {
+		code[$<integer>2].a = codeTablePoint;
+	}
+	;
+if_stmt_no_else:
 	IF expr get_code_addr {
 		gen(jpc, 0, 0);
-	} THEN stmt_sequence END %prec IFX {
-		code[$3].a = codeTablePoint;
-	}
-	| IF expr get_code_addr {
-		gen(jpc, 0, 0);
-	} THEN stmt_sequence get_code_addr {
-		gen(jmp, 0, 0);
-	} ELSE {
-		code[$<integer>3].a = codeTablePoint;
-	} stmt_sequence END {
-		code[$<integer>6].a = codeTablePoint;
-	}
+		$<integer>$ = $<integer>3;
+	} THEN stmt_sequence
 	;
 repeat_stmt:
 	REPEAT get_code_addr stmt_sequence UNTIL expr {
@@ -284,7 +289,7 @@ assign_stmt:
 			exit(1);
 		}
 		else if (table[$<integer>1].kind != variable) {
-			yyerror("%s is not a variable", table[$<ident>1].name);	/* 标识符非变量 */
+			yyerror("is not a variable");	/* 标识符非变量 */
 			exit(1);
 		}
 		gen(sto, lev-table[$<integer>1].level, table[$<integer>1].adr);
@@ -297,7 +302,7 @@ read_stmt:
 			exit(1);
 		}
 		else if (table[$<integer>2].kind != variable) {
-			yyerror("%s is not a variable", table[$<ident>2].name);	/* 标识符非变量 */
+			yyerror("is not a variable");	/* 标识符非变量 */
 			exit(1);
 		}
 		gen(opr, 0, 16); /* 读操作 */
@@ -314,8 +319,8 @@ write_stmt:
 while_stmt:
 	WHILE get_code_addr '(' expr ')' get_code_addr {
 		gen(jpc, 0, 0);
-	} DO BEGIN stmt_sequence END {
-		gen(jmp, 0, $<integer>2)
+	} DO MYBEGIN stmt_sequence END {
+		gen(jmp, 0, $<integer>2);
 		code[$<integer>6].a = codeTablePoint;
 	}
 	;
@@ -348,7 +353,7 @@ arg_stmt:
 			exit(1);
 		}
 		else if (table[$<integer>1].kind != variable) {
-			yyerror("%s is not a variable", table[$<ident>1].name);	/* 标识符是过程 */
+			yyerror("is not a variable");	/* 标识符是过程 */
 			exit(1);
 		}
 		gen(lod, lev-table[$<integer>1].level, table[$<integer>1].adr); /* 取变量 */
@@ -360,7 +365,7 @@ arg_stmt:
 			exit(1);
 		}
 		else if (table[$<integer>3].kind != variable) {
-			yyerror("%s is not a variable", table[$<ident>3].name);	/* 标识符是过程 */
+			yyerror("is not a variable");	/* 标识符是过程 */
 			exit(1);
 		}
 		gen(lod, lev-table[$<integer>3].level, table[$<integer>3].adr); /* 取变量 */
@@ -425,8 +430,18 @@ simple_expr:
 		gen(opr, 0, 5);
 		$<integer>$ = $<integer>1/$<integer>3;
 		fprintf(stdout, "%d\n", $<integer>$);
-	}
-	| '(' simple_expr ')' {
+	} 
+	| simple_expr '%' simple_expr {
+		gen(opr, 0, 17);
+		$<integer>$ = $<integer>1%$<integer>3;
+		fprintf(stdout, "%d\n", $<integer>$);
+	} 
+	| simple_expr XOR simple_expr {
+		gen(opr, 0, 18);
+		$<integer>$ = $<integer>1^$<integer>3;
+		fprintf(stdout, "%d\n", $<integer>$);
+	} 
+	| '(' expr ')' {
 		$<integer>$ = $<integer>2;
 		fprintf(stdout, "%d\n", $<integer>$);
 	}
@@ -444,11 +459,9 @@ simple_expr:
 			switch (table[i].kind) {
 				case constant:	/* 标识符为常量 */
 					gen(lit, 0, table[i].val);	/* 直接把常量的值入栈 */
-					$<integer>$ = table[i].val;
 					break;
 				case variable:	/* 标识符为变量 */
 					gen(lod, lev-table[i].level, table[i].adr);	/* 找到变量地址并将其值入栈 */
-					$<integer>$ = getValue(i); /* 表达式的值即identifier的值 */
 					break;
 				case procedure:	/* 标识符为过程 */
 					yyerror("cannot be procedure");	/* 不能为过程 */
@@ -467,9 +480,11 @@ proc_identifier:
 		$<integer>$ = proc_position($<ident>1);
 	}
 %%
-void yyerror(char *s) {
+int yyerror(char *s) {
 	err++;
+	printf("line %d error: %s\n", line, s);
 	fprintf(stdout, "line %d error: %s\n", line, s);
+	return 0;
 }
 void enter(enum object k) {
 	symbolTablePoint++;
@@ -519,8 +534,10 @@ int proc_position(char* id) {
 }
 void setdx(int n) {
 	int i;
+	printf("setdx(%d)\n", n);
 	for (i=1; i<=n; i++) {
-		table[symbolTablePoint-i+1] = n-i+3;
+		table[symbolTablePoint-i+1].adr = n-i+3;
+		printf("%s: %d\n", table[symbolTablePoint-i+1].name, table[symbolTablePoint-i+1].adr);
 	}
 }
 void gen(enum fct x, int y, int z) {
@@ -578,6 +595,14 @@ void displaytable() {
 		fprintf(ftable,"\n");
 	}
 }
+void outputStack(int *s, int t) {
+	printf("==================================\n");
+	int i;
+	for(i = 0; i <= t; i++) {
+		printf("%d: %d\n", i, s[i]);
+	}
+	printf("==================================\n");
+}
 void interpret()
 {
 	int p = 0; /* 指令指针 */
@@ -595,6 +620,7 @@ void interpret()
 	do {
 	    i = code[p];	/* 读当前指令 */
 		p = p + 1;
+		outputStack(s, t);
 		switch (i.f)
 		{
 			case lit:	/* 将常量a的值取到栈顶 */
@@ -671,6 +697,15 @@ void interpret()
 						scanf("%d", &(s[t]));
 						fprintf(fresult, "%d\n", s[t]);						
 						break;
+					case 17:/* 取模运算 */
+						t = t - 1;
+						s[t] = s[t] % s[t + 1];
+						break;
+					case 18:/* 异或运算 */
+						t = t - 1;
+						s[t] = s[t] ^ s[t + 1];
+						break;
+
 				}
 				break;
 			case lod:	/* 取相对当前过程的数据基地址为a的内存的值到栈顶 */
@@ -701,8 +736,8 @@ void interpret()
 				break;
 		}
 	} while (p != 0);
-	printf("End pl0\n");
-	fprintf(fresult,"End pl0\n");
+	printf("End small\n");
+	fprintf(fresult,"End small\n");
 }
 int base(int l, int* s, int b)
 {
