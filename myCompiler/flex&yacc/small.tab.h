@@ -81,7 +81,7 @@ extern int yydebug;
 typedef union YYSTYPE YYSTYPE;
 union YYSTYPE
 {
-#line 93 "small.y" /* yacc.c:1909  */
+#line 103 "small.y" /* yacc.c:1909  */
 
 	int integer; /* integer value */ 
 	char *ident; /* identifier */ 

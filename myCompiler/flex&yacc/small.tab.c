@@ -84,12 +84,14 @@
 	#define codeTablePointmax 200     /* 最多的虚拟机代码数 */
 	#define stacksize 500 /* 运行时数据栈元素最多为500个 */
 	#define paraTableMax 200
+	#define PROCMAX 20
+	#define GLOBALMAX 20
+	#define LOCALMAX 50
 
 	/* 符号表中的类型 */
 	enum object {
 		constant, 
 		variable, 
-		parameter,
 		procedure,
 	};
 	
@@ -134,6 +136,15 @@
 	bool tableswitch ;  		/* 显示符号表与否 */
 	int currParaCnt = 0;		/* 记录当前调用函数的所扫描到的参数个数 */
 
+	struct tablestruct procRecord[PROCMAX];	/* 记录程序中的函数 */
+	int procRecordPtr = 0; 		/* 记录程序中函数的个数 */
+	struct tablestruct globalRecord[PROCMAX];	/* 记录程序中全局变量 */
+	int globalRecordPtr = 0;
+	struct tablestruct localRecord[PROCMAX];	/* 记录程序中局部变量 */
+	int localRecordPtr = 0;
+	bool globallocalswitch = 1;	/* 1表示全局变量，0表示局部变量 */
+	bool procDeclFinished = 0;	/* 1表示结束，0表示未结束 */
+
 	FILE* fin;      /* 输入源文件 */
 	FILE* ftable;	/* 输出符号表 */
 	FILE* fcode;    /* 输出虚拟机代码 */
@@ -148,14 +159,13 @@
 	int position(char* idt);
 	void enter(enum object k);
 	void interpret(void);
-	int base(int l, int* s, int b);
 	void init(void);
 	void setdx(int n);
 	void listall();
 	void displaytable();
 	void outputStack(int i, int *s, int t);
 
-#line 159 "small.tab.c" /* yacc.c:339  */
+#line 169 "small.tab.c" /* yacc.c:339  */
 
 # ifndef YY_NULLPTR
 #  if defined __cplusplus && 201103L <= __cplusplus
@@ -226,12 +236,12 @@ extern int yydebug;
 typedef union YYSTYPE YYSTYPE;
 union YYSTYPE
 {
-#line 93 "small.y" /* yacc.c:355  */
+#line 103 "small.y" /* yacc.c:355  */
 
 	int integer; /* integer value */ 
 	char *ident; /* identifier */ 
 
-#line 235 "small.tab.c" /* yacc.c:355  */
+#line 245 "small.tab.c" /* yacc.c:355  */
 };
 # define YYSTYPE_IS_TRIVIAL 1
 # define YYSTYPE_IS_DECLARED 1
@@ -246,7 +256,7 @@ int yyparse (void);
 
 /* Copy the second part of user declarations.  */
 
-#line 250 "small.tab.c" /* yacc.c:358  */
+#line 260 "small.tab.c" /* yacc.c:358  */
 
 #ifdef short
 # undef short
@@ -486,16 +496,16 @@ union yyalloc
 #endif /* !YYCOPY_NEEDED */
 
 /* YYFINAL -- State number of the termination state.  */
-#define YYFINAL  4
+#define YYFINAL  3
 /* YYLAST -- Last index in YYTABLE.  */
-#define YYLAST   116
+#define YYLAST   120
 
 /* YYNTOKENS -- Number of terminals.  */
 #define YYNTOKENS  40
 /* YYNNTS -- Number of nonterminals.  */
-#define YYNNTS  42
+#define YYNNTS  39
 /* YYNRULES -- Number of rules.  */
-#define YYNRULES  75
+#define YYNRULES  72
 /* YYNSTATES -- Number of states.  */
 #define YYNSTATES  138
 
@@ -546,14 +556,14 @@ static const yytype_uint8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint16 yyrline[] =
 {
-       0,   111,   111,   114,   121,   114,   133,   137,   143,   146,
-     151,   154,   159,   169,   173,   178,   181,   186,   195,   198,
-     203,   203,   210,   213,   218,   224,   232,   234,   237,   240,
-     243,   251,   252,   255,   256,   257,   258,   259,   260,   261,
-     264,   267,   267,   275,   275,   281,   286,   299,   313,   320,
-     320,   328,   341,   344,   349,   361,   376,   379,   383,   387,
-     391,   395,   399,   403,   409,   414,   419,   424,   429,   434,
-     439,   444,   448,   453,   474,   479
+       0,   121,   121,   126,   129,   121,   140,   144,   147,   152,
+     155,   160,   168,   174,   179,   182,   187,   195,   195,   201,
+     206,   216,   219,   224,   230,   237,   240,   243,   251,   252,
+     255,   256,   257,   258,   259,   260,   261,   264,   267,   267,
+     275,   275,   281,   286,   308,   332,   339,   339,   347,   360,
+     363,   368,   389,   413,   416,   420,   424,   428,   432,   436,
+     440,   446,   451,   456,   461,   466,   471,   476,   481,   485,
+     490,   518,   523
 };
 #endif
 
@@ -566,15 +576,14 @@ static const char *const yytname[] =
   "END", "REPEAT", "UNTIL", "READ", "WRITE", "CALL", "CONST", "VAR",
   "MYBEGIN", "XOR", "ODD", "PROC", "WHILE", "DO", "IFX", "BC", "GT", "LT",
   "GE", "LE", "EQ", "NE", "'+'", "'-'", "'*'", "'/'", "'%'", "UMINUS",
-  "';'", "','", "'('", "')'", "$accept", "program", "block", "@1", "$@2",
-  "get_table_addr", "get_code_addr", "const_decl", "const_list",
-  "const_def", "var_decl", "var_list", "var_def", "proc_decls",
-  "proc_decl", "$@3", "para_list", "para_stmt", "proc_body",
-  "increase_procTablePoint", "decrease_level", "decrease_procTablePoint",
-  "increase_level", "stmt_sequence", "statement", "if_stmt", "$@4",
-  "if_stmt_no_else", "@5", "repeat_stmt", "assign_stmt", "read_stmt",
-  "write_stmt", "while_stmt", "$@6", "call_stmt", "arg_list", "arg_stmt",
-  "expr", "simple_expr", "identifier", "proc_identifier", YY_NULLPTR
+  "';'", "','", "'('", "')'", "$accept", "program", "$@1", "$@2", "$@3",
+  "get_code_addr", "const_decl", "const_list", "const_def", "var_decl",
+  "var_list", "var_def", "proc_decls", "$@4", "proc_decl", "para_list",
+  "para_stmt", "increase_procRecord", "decrease_level", "increase_level",
+  "stmt_sequence", "statement", "if_stmt", "$@5", "if_stmt_no_else", "@6",
+  "repeat_stmt", "assign_stmt", "read_stmt", "write_stmt", "while_stmt",
+  "$@7", "call_stmt", "arg_list", "arg_stmt", "expr", "simple_expr",
+  "identifier", "proc_identifier", YY_NULLPTR
 };
 #endif
 
@@ -590,12 +599,12 @@ static const yytype_uint16 yytoknum[] =
 };
 # endif
 
-#define YYPACT_NINF -54
+#define YYPACT_NINF -56
 
 #define yypact_value_is_default(Yystate) \
-  (!!((Yystate) == (-54)))
+  (!!((Yystate) == (-56)))
 
-#define YYTABLE_NINF -28
+#define YYTABLE_NINF -1
 
 #define yytable_value_is_error(Yytable_value) \
   0
@@ -604,20 +613,20 @@ static const yytype_uint16 yytoknum[] =
      STATE-NUM.  */
 static const yytype_int8 yypact[] =
 {
-     -54,    15,   -54,   -54,   -54,    25,    14,     4,    17,   -24,
-     -54,    39,   -54,    45,   -54,    14,   -54,    10,   -54,    32,
-     -54,   -54,   -54,    39,    13,    34,    33,   -54,   -54,     3,
-     -54,    50,     3,    52,   -54,    20,   -54,   -54,    53,   -54,
-     -54,   -54,   -54,   -54,   -54,    35,   -54,    57,   -54,   -54,
-       5,     5,     3,   -54,    64,    13,   -54,   -54,   -54,    41,
-      42,    13,   -54,   -54,     3,   -54,    75,   -54,    -3,   -54,
-      46,   -54,     5,     5,     5,     5,     5,     5,     5,     5,
-       5,     5,     5,     5,     1,    50,     3,   -54,    77,   -54,
-     -54,   -54,   -54,   -54,    93,   -54,    -3,    -3,    -3,    -3,
-      -3,    -3,    31,    31,    83,    83,    83,     3,    62,    65,
-     -54,    66,    13,   -54,    68,    13,   -54,   -54,    50,   -54,
-      -4,   100,    20,   -54,   -54,   -54,   -54,    69,    67,    86,
-      73,   107,    95,   -54,   -54,    13,     2,   -54
+     -56,    16,   -56,   -56,     4,    19,    10,    -4,   -25,   -56,
+      23,   -56,    20,   -56,    19,   -56,   -22,   -56,   -56,   -56,
+     -56,   -56,    23,    12,   -56,    25,   100,    13,   -56,   -56,
+       2,   -56,    29,     2,    31,   -56,     0,   -56,   -56,    38,
+     -56,   -56,   -56,   -56,   -56,   -56,    34,     4,    37,   -56,
+     -56,     6,     6,     2,   -56,    68,   100,   -56,   -56,   -56,
+      39,    40,   100,   -56,   -56,     2,    10,    58,    18,   -56,
+      42,   -56,     6,     6,     6,     6,     6,     6,     6,     6,
+       6,     6,     6,     6,    11,    29,     2,   -56,    69,   -56,
+     -56,   -56,    44,    47,   -56,    73,   -56,    18,    18,    18,
+      18,    18,    18,    21,    21,    70,    70,    70,     2,    49,
+      52,   -56,    65,   100,   100,   -56,    83,   100,   -56,   -56,
+      29,   -56,    -6,     5,    71,   -56,     0,   -56,   -56,   -56,
+     -56,   -56,    85,   -56,    92,   100,     9,   -56
 };
 
   /* YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
@@ -625,121 +634,121 @@ static const yytype_int8 yypact[] =
      means the default is an error.  */
 static const yytype_uint8 yydefact[] =
 {
-       3,     0,     2,     6,     1,     9,     0,    14,     0,     0,
-      10,     0,    19,     0,     8,     0,    17,     0,    15,     4,
-      12,    11,    13,     0,     0,     0,     0,    16,    74,     0,
-       7,     0,     0,     0,     7,     5,    32,    33,     7,    34,
-      35,    36,    37,    38,    39,     0,     3,     0,    73,    72,
-       0,     0,     0,     7,    56,     0,    47,    48,    75,     0,
-       0,     0,    40,    41,     0,    28,     0,    20,    57,    64,
-       0,    43,     0,     0,     0,     0,     0,     0,     0,     0,
-       0,     0,     0,     0,     0,    53,     0,    31,     0,    46,
-      26,    29,    30,    71,     0,    70,    62,    60,    61,    63,
-      58,    59,    65,    66,    67,    68,    69,     0,     0,    52,
-      54,     0,     0,    18,     0,     0,    45,    51,     0,     7,
-       0,    23,    44,    55,    49,    42,    24,     0,    22,     0,
-       0,     0,     0,    21,    25,     0,     0,    50
+       6,     0,     2,     1,     8,     0,    13,     0,     0,     9,
+       0,     3,     0,     7,     0,    16,     0,    14,    19,    11,
+      10,    12,     0,     4,    15,     0,     0,     0,    27,    71,
+       0,     6,     0,     0,     0,     6,     5,    29,    30,     6,
+      31,    32,    33,    34,    35,    36,     0,     8,     0,    70,
+      69,     0,     0,     0,     6,    53,     0,    44,    45,    72,
+       0,     0,     0,    37,    38,     0,    13,    22,    54,    61,
+       0,    40,     0,     0,     0,     0,     0,     0,     0,     0,
+       0,     0,     0,     0,     0,    50,     0,    28,     0,    43,
+      17,    23,     0,    21,    68,     0,    67,    59,    57,    58,
+      60,    55,    56,    62,    63,    64,    65,    66,     0,     0,
+      49,    51,     0,     0,     0,    25,     0,     0,    42,    48,
+       0,     6,     0,     0,     0,    24,    41,    52,    46,    39,
+      26,    20,     0,    18,     0,     0,     0,    47
 };
 
   /* YYPGOTO[NTERM-NUM].  */
 static const yytype_int8 yypgoto[] =
 {
-     -54,   -54,    70,   -54,   -54,   -54,   -33,   -54,   -54,    97,
-     -54,   -54,    90,   -54,   -54,   -54,   -54,   -54,   -54,   -54,
-     -54,   -54,   -54,   -53,    54,   -54,   -54,   -54,   -54,   -54,
-     -54,   -54,   -54,   -54,   -54,   -54,   -54,   -54,   -29,    -6,
-     -31,   -54
+     -56,   -56,   -56,   -56,   -56,   -31,    63,   -56,   101,    48,
+     -56,    94,   -56,   -56,   -56,   -56,   -56,   -56,   -56,   -56,
+     -55,    55,   -56,   -56,   -56,   -56,   -56,   -56,   -56,   -56,
+     -56,   -56,   -56,   -56,   -56,   -26,    -9,   -29,   -56
 };
 
   /* YYDEFGOTO[NTERM-NUM].  */
 static const yytype_int16 yydefgoto[] =
 {
-      -1,     1,     2,     3,    24,     5,    55,     7,     9,    10,
-      12,    17,    18,    19,    25,    92,   127,   128,    66,    26,
-      90,   113,   114,    35,    36,    37,    88,    38,    94,    39,
-      40,    41,    42,    43,   129,    44,   108,   109,    53,    54,
-      45,    59
+      -1,     1,     4,    18,    26,     2,     6,     8,     9,    11,
+      16,    17,    23,   114,    27,    92,    93,   124,   133,    48,
+      36,    37,    38,    88,    39,    95,    40,    41,    42,    43,
+      44,   132,    45,   109,   110,    54,    55,    46,    60
 };
 
   /* YYTABLE[YYPACT[STATE-NUM]] -- What to do in state STATE-NUM.  If
      positive, shift that token.  If negative, reduce the rule whose
      number is the opposite.  If YYTABLE_NINF, syntax error.  */
-static const yytype_int16 yytable[] =
+static const yytype_uint8 yytable[] =
 {
-      56,    60,    84,    57,   125,    63,    48,    49,    48,    49,
-     137,   107,    14,    15,    72,     4,    28,     8,    29,    11,
-      71,    50,    30,    70,    31,    32,    33,    79,    80,    81,
-      82,    83,    61,    34,    51,    89,    51,    61,    61,     6,
-      13,    52,    16,    52,    68,    69,    22,    23,    72,    20,
-      46,   -27,    47,    28,   110,    58,    61,   111,    64,   120,
-      67,    62,   122,    81,    82,    83,    95,    96,    97,    98,
-      99,   100,   101,   102,   103,   104,   105,   106,   116,    85,
-      86,    72,   136,    91,   112,    93,   124,   123,    73,    74,
-      75,    76,    77,    78,    79,    80,    81,    82,    83,   115,
-      72,   117,   118,   126,   131,   119,   121,   132,   130,   133,
-     134,   135,    21,    27,     0,    87,    65
+      56,    84,   129,    57,    61,    49,    50,    58,    64,    49,
+      50,    13,    14,   130,    21,    22,     3,   137,     5,    12,
+      51,   108,     7,    71,    19,    10,    15,    70,    28,    47,
+      62,    25,    29,    52,    59,    72,    62,    52,    72,    89,
+      53,    62,    68,    69,    53,    62,    63,    62,    79,    80,
+      81,    82,    83,    81,    82,    83,   111,    65,   122,   123,
+     112,    91,   126,    96,    97,    98,    99,   100,   101,   102,
+     103,   104,   105,   106,   107,    67,   113,    85,    86,   117,
+     136,    94,   118,   115,   116,    72,   125,    72,   119,   120,
+     128,   127,    73,    74,    75,    76,    77,    78,    79,    80,
+      81,    82,    83,    29,   121,    30,   134,   131,   135,    31,
+      66,    32,    33,    34,    90,    20,    24,    87,     0,     0,
+      35
 };
 
 static const yytype_int16 yycheck[] =
 {
-      31,    34,    55,    32,     8,    38,     3,     4,     3,     4,
-       8,    10,    36,    37,    17,     0,     3,     3,     5,    15,
-      53,    18,     9,    52,    11,    12,    13,    30,    31,    32,
-      33,    34,    36,    20,    31,    64,    31,    36,    36,    14,
-      23,    38,     3,    38,    50,    51,    36,    37,    17,     4,
-      16,    19,    19,     3,    85,     3,    36,    86,    23,   112,
-       3,     8,   115,    32,    33,    34,    72,    73,    74,    75,
-      76,    77,    78,    79,    80,    81,    82,    83,   107,    38,
-      38,    17,   135,     8,     7,    39,   119,   118,    24,    25,
-      26,    27,    28,    29,    30,    31,    32,    33,    34,     6,
-      17,    39,    37,     3,    37,    39,    38,    21,    39,    36,
-       3,    16,    15,    23,    -1,    61,    46
+      31,    56,     8,    32,    35,     3,     4,    33,    39,     3,
+       4,    36,    37,     8,    36,    37,     0,     8,    14,    23,
+      18,    10,     3,    54,     4,    15,     3,    53,     3,    16,
+      36,    19,     3,    31,     3,    17,    36,    31,    17,    65,
+      38,    36,    51,    52,    38,    36,     8,    36,    30,    31,
+      32,    33,    34,    32,    33,    34,    85,    23,   113,   114,
+      86,     3,   117,    72,    73,    74,    75,    76,    77,    78,
+      79,    80,    81,    82,    83,    38,     7,    38,    38,     6,
+     135,    39,   108,    39,    37,    17,     3,    17,    39,    37,
+     121,   120,    24,    25,    26,    27,    28,    29,    30,    31,
+      32,    33,    34,     3,    39,     5,    21,    36,    16,     9,
+      47,    11,    12,    13,    66,    14,    22,    62,    -1,    -1,
+      20
 };
 
   /* YYSTOS[STATE-NUM] -- The (internal number of the) accessing
      symbol of state STATE-NUM.  */
 static const yytype_uint8 yystos[] =
 {
-       0,    41,    42,    43,     0,    45,    14,    47,     3,    48,
-      49,    15,    50,    23,    36,    37,     3,    51,    52,    53,
-       4,    49,    36,    37,    44,    54,    59,    52,     3,     5,
-       9,    11,    12,    13,    20,    63,    64,    65,    67,    69,
-      70,    71,    72,    73,    75,    80,    16,    19,     3,     4,
-      18,    31,    38,    78,    79,    46,    80,    78,     3,    81,
-      46,    36,     8,    46,    23,    42,    58,     3,    79,    79,
-      78,    46,    17,    24,    25,    26,    27,    28,    29,    30,
-      31,    32,    33,    34,    63,    38,    38,    64,    66,    78,
-      60,     8,    55,    39,    68,    79,    79,    79,    79,    79,
-      79,    79,    79,    79,    79,    79,    79,    10,    76,    77,
-      80,    78,     7,    61,    62,     6,    78,    39,    37,    39,
-      63,    38,    63,    80,    46,     8,     3,    56,    57,    74,
-      39,    37,    21,    36,     3,    16,    63,     8
+       0,    41,    45,     0,    42,    14,    46,     3,    47,    48,
+      15,    49,    23,    36,    37,     3,    50,    51,    43,     4,
+      48,    36,    37,    52,    51,    19,    44,    54,     3,     3,
+       5,     9,    11,    12,    13,    20,    60,    61,    62,    64,
+      66,    67,    68,    69,    70,    72,    77,    16,    59,     3,
+       4,    18,    31,    38,    75,    76,    45,    77,    75,     3,
+      78,    45,    36,     8,    45,    23,    46,    38,    76,    76,
+      75,    45,    17,    24,    25,    26,    27,    28,    29,    30,
+      31,    32,    33,    34,    60,    38,    38,    61,    63,    75,
+      49,     3,    55,    56,    39,    65,    76,    76,    76,    76,
+      76,    76,    76,    76,    76,    76,    76,    76,    10,    73,
+      74,    77,    75,     7,    53,    39,    37,     6,    75,    39,
+      37,    39,    60,    60,    57,     3,    60,    77,    45,     8,
+       8,    36,    71,    58,    21,    16,    60,     8
 };
 
   /* YYR1[YYN] -- Symbol number of symbol that rule YYN derives.  */
 static const yytype_uint8 yyr1[] =
 {
-       0,    40,    41,    43,    44,    42,    45,    46,    47,    47,
-      48,    48,    49,    50,    50,    51,    51,    52,    53,    53,
-      55,    54,    56,    56,    57,    57,    58,    59,    60,    61,
-      62,    63,    63,    64,    64,    64,    64,    64,    64,    64,
-      65,    66,    65,    68,    67,    69,    70,    71,    72,    74,
-      73,    75,    76,    76,    77,    77,    78,    78,    78,    78,
-      78,    78,    78,    78,    79,    79,    79,    79,    79,    79,
-      79,    79,    79,    79,    80,    81
+       0,    40,    42,    43,    44,    41,    45,    46,    46,    47,
+      47,    48,    49,    49,    50,    50,    51,    53,    52,    52,
+      54,    55,    55,    56,    56,    57,    58,    59,    60,    60,
+      61,    61,    61,    61,    61,    61,    61,    62,    63,    62,
+      65,    64,    66,    67,    68,    69,    71,    70,    72,    73,
+      73,    74,    74,    75,    75,    75,    75,    75,    75,    75,
+      75,    76,    76,    76,    76,    76,    76,    76,    76,    76,
+      76,    77,    78
 };
 
   /* YYR2[YYN] -- Number of symbols on the right hand side of rule YYN.  */
 static const yytype_uint8 yyr2[] =
 {
-       0,     2,     1,     0,     0,     7,     0,     0,     3,     0,
-       1,     3,     3,     3,     0,     1,     3,     1,     6,     0,
-       0,     9,     1,     0,     1,     3,     2,     0,     0,     0,
-       0,     3,     1,     1,     1,     1,     1,     1,     1,     1,
-       2,     0,     6,     0,     6,     5,     3,     2,     2,     0,
-      11,     5,     1,     0,     1,     3,     1,     2,     3,     3,
-       3,     3,     3,     3,     2,     3,     3,     3,     3,     3,
-       3,     3,     1,     1,     1,     1
+       0,     2,     0,     0,     0,     8,     0,     3,     0,     1,
+       3,     3,     3,     0,     1,     3,     1,     0,     9,     0,
+       8,     1,     0,     1,     3,     0,     0,     0,     3,     1,
+       1,     1,     1,     1,     1,     1,     1,     2,     0,     6,
+       0,     6,     5,     3,     2,     2,     0,    11,     5,     1,
+       0,     1,     3,     1,     2,     3,     3,     3,     3,     3,
+       3,     2,     3,     3,     3,     3,     3,     3,     3,     1,
+       1,     1,     1
 };
 
 
@@ -1415,230 +1424,233 @@ yyreduce:
   YY_REDUCE_PRINT (yyn);
   switch (yyn)
     {
-        case 3:
-#line 114 "small.y" /* yacc.c:1646  */
+        case 2:
+#line 121 "small.y" /* yacc.c:1646  */
     {
-	table[symbolTablePoint].adr = codeTablePoint;
-	(yyval.integer) = codeTablePoint;
-	gen(jmp, 0, 0);
-}
-#line 1426 "small.tab.c" /* yacc.c:1646  */
+		gen(jmp, 0, 0);
+		globallocalswitch = 1;
+	}
+#line 1434 "small.tab.c" /* yacc.c:1646  */
+    break;
+
+  case 3:
+#line 126 "small.y" /* yacc.c:1646  */
+    {
+		globallocalswitch = 0;
+	}
+#line 1442 "small.tab.c" /* yacc.c:1646  */
     break;
 
   case 4:
-#line 121 "small.y" /* yacc.c:1646  */
+#line 129 "small.y" /* yacc.c:1646  */
     {
-	code[(yyvsp[-4].integer)].a = codeTablePoint;
-
-	table[(yyvsp[-4].integer)].adr = codeTablePoint;
-	table[(yyvsp[-4].integer)].size = (yyvsp[-2].integer)+3;
-	gen(ini, 0, (yyvsp[-2].integer)+3);
-	displaytable();
-}
-#line 1439 "small.tab.c" /* yacc.c:1646  */
+		code[(yyvsp[-5].integer)].a = codeTablePoint;
+		procRecord[1].adr = codeTablePoint;
+		displaytable();
+		procDeclFinished = 1;
+		gen(ini, 0, (yyvsp[-3].integer)+3);
+	}
+#line 1454 "small.tab.c" /* yacc.c:1646  */
     break;
 
   case 5:
-#line 128 "small.y" /* yacc.c:1646  */
+#line 135 "small.y" /* yacc.c:1646  */
     {
-	gen(opr, 0, 0);
-	symbolTablePoint = proctable[procTablePoint];
-}
-#line 1448 "small.tab.c" /* yacc.c:1646  */
+		gen(opr, 0, 0);
+	}
+#line 1462 "small.tab.c" /* yacc.c:1646  */
     break;
 
   case 6:
-#line 133 "small.y" /* yacc.c:1646  */
-    {
-	(yyval.integer) = symbolTablePoint;
-	printf("table_addr: %d\n", symbolTablePoint);
-}
-#line 1457 "small.tab.c" /* yacc.c:1646  */
-    break;
-
-  case 7:
-#line 137 "small.y" /* yacc.c:1646  */
+#line 140 "small.y" /* yacc.c:1646  */
     {
 	(yyval.integer) = codeTablePoint; 
 }
-#line 1465 "small.tab.c" /* yacc.c:1646  */
+#line 1470 "small.tab.c" /* yacc.c:1646  */
     break;
 
-  case 8:
-#line 143 "small.y" /* yacc.c:1646  */
+  case 7:
+#line 144 "small.y" /* yacc.c:1646  */
     {
 		(yyval.integer) = (yyvsp[-1].integer);
 	}
-#line 1473 "small.tab.c" /* yacc.c:1646  */
+#line 1478 "small.tab.c" /* yacc.c:1646  */
     break;
 
-  case 9:
-#line 146 "small.y" /* yacc.c:1646  */
+  case 8:
+#line 147 "small.y" /* yacc.c:1646  */
     {
 		(yyval.integer) = 0;
 	}
-#line 1481 "small.tab.c" /* yacc.c:1646  */
+#line 1486 "small.tab.c" /* yacc.c:1646  */
     break;
 
-  case 10:
-#line 151 "small.y" /* yacc.c:1646  */
+  case 9:
+#line 152 "small.y" /* yacc.c:1646  */
     {
 		(yyval.integer) = 1;
 	}
-#line 1489 "small.tab.c" /* yacc.c:1646  */
+#line 1494 "small.tab.c" /* yacc.c:1646  */
     break;
 
-  case 11:
-#line 154 "small.y" /* yacc.c:1646  */
+  case 10:
+#line 155 "small.y" /* yacc.c:1646  */
     {
 		(yyval.integer) = (yyvsp[-2].integer)+1;
 	}
-#line 1497 "small.tab.c" /* yacc.c:1646  */
+#line 1502 "small.tab.c" /* yacc.c:1646  */
     break;
 
-  case 12:
-#line 159 "small.y" /* yacc.c:1646  */
+  case 11:
+#line 160 "small.y" /* yacc.c:1646  */
     {
 		strcpy(id, (yyvsp[-2].ident));
 		num = (yyvsp[0].integer);
 		enter(constant);
 		(yyval.integer) = 1;
 	}
-#line 1508 "small.tab.c" /* yacc.c:1646  */
+#line 1513 "small.tab.c" /* yacc.c:1646  */
+    break;
+
+  case 12:
+#line 168 "small.y" /* yacc.c:1646  */
+    {
+		(yyval.integer) = (yyvsp[-1].integer);
+		if (globallocalswitch == 0) {
+			setdx((yyvsp[-1].integer)+3);
+		}
+	}
+#line 1524 "small.tab.c" /* yacc.c:1646  */
     break;
 
   case 13:
-#line 169 "small.y" /* yacc.c:1646  */
-    {
-		(yyval.integer) = (yyvsp[-1].integer);
-		setdx((yyvsp[-1].integer));
-	}
-#line 1517 "small.tab.c" /* yacc.c:1646  */
-    break;
-
-  case 14:
-#line 173 "small.y" /* yacc.c:1646  */
+#line 174 "small.y" /* yacc.c:1646  */
     {
 		(yyval.integer) = 0;
 	}
-#line 1525 "small.tab.c" /* yacc.c:1646  */
+#line 1532 "small.tab.c" /* yacc.c:1646  */
+    break;
+
+  case 14:
+#line 179 "small.y" /* yacc.c:1646  */
+    {
+		(yyval.integer) = 1;
+	}
+#line 1540 "small.tab.c" /* yacc.c:1646  */
     break;
 
   case 15:
-#line 178 "small.y" /* yacc.c:1646  */
-    {
-		(yyval.integer) = 1;
-	}
-#line 1533 "small.tab.c" /* yacc.c:1646  */
-    break;
-
-  case 16:
-#line 181 "small.y" /* yacc.c:1646  */
+#line 182 "small.y" /* yacc.c:1646  */
     {
 		(yyval.integer) = (yyvsp[-2].integer)+1;
 	}
-#line 1541 "small.tab.c" /* yacc.c:1646  */
+#line 1548 "small.tab.c" /* yacc.c:1646  */
     break;
 
-  case 17:
-#line 186 "small.y" /* yacc.c:1646  */
+  case 16:
+#line 187 "small.y" /* yacc.c:1646  */
     {
 		strcpy(id, (yyvsp[0].ident));
+		num = 0;
 		enter(variable);
 		(yyval.integer) = 1;
-	}
-#line 1551 "small.tab.c" /* yacc.c:1646  */
-    break;
-
-  case 18:
-#line 195 "small.y" /* yacc.c:1646  */
-    {
-		(yyval.integer) = (yyvsp[-5].integer)+1;
 	}
 #line 1559 "small.tab.c" /* yacc.c:1646  */
     break;
 
-  case 19:
-#line 198 "small.y" /* yacc.c:1646  */
+  case 17:
+#line 195 "small.y" /* yacc.c:1646  */
     {
-		(yyval.integer) = 0;
+		gen(ini, 0, (yyvsp[-3].integer)+(yyvsp[0].integer)+3);
 	}
 #line 1567 "small.tab.c" /* yacc.c:1646  */
     break;
 
-  case 20:
-#line 203 "small.y" /* yacc.c:1646  */
+  case 18:
+#line 197 "small.y" /* yacc.c:1646  */
     {
-		strcpy(id, (yyvsp[0].ident));
-		enter(procedure);
-		proctable[procTablePoint] = symbolTablePoint;
+		(yyval.integer) = (yyvsp[-8].integer)+1;
+		gen(opr, 0, 0);
 	}
-#line 1577 "small.tab.c" /* yacc.c:1646  */
+#line 1576 "small.tab.c" /* yacc.c:1646  */
     break;
 
-  case 22:
-#line 210 "small.y" /* yacc.c:1646  */
-    {
-		(yyval.integer) = (yyvsp[0].integer);
-	}
-#line 1585 "small.tab.c" /* yacc.c:1646  */
-    break;
-
-  case 23:
-#line 213 "small.y" /* yacc.c:1646  */
+  case 19:
+#line 201 "small.y" /* yacc.c:1646  */
     {
 		(yyval.integer) = 0;
 	}
-#line 1593 "small.tab.c" /* yacc.c:1646  */
+#line 1584 "small.tab.c" /* yacc.c:1646  */
     break;
 
-  case 24:
-#line 218 "small.y" /* yacc.c:1646  */
+  case 20:
+#line 206 "small.y" /* yacc.c:1646  */
+    {
+		if (procDeclFinished == 0) {
+			strcpy(id, (yyvsp[-6].ident));
+			num = (yyvsp[-3].integer);
+			enter(procedure);
+		}
+		(yyval.integer) = (yyvsp[-3].integer);
+	}
+#line 1597 "small.tab.c" /* yacc.c:1646  */
+    break;
+
+  case 21:
+#line 216 "small.y" /* yacc.c:1646  */
+    {
+		(yyval.integer) = (yyvsp[0].integer);
+	}
+#line 1605 "small.tab.c" /* yacc.c:1646  */
+    break;
+
+  case 22:
+#line 219 "small.y" /* yacc.c:1646  */
+    {
+		(yyval.integer) = 0;
+	}
+#line 1613 "small.tab.c" /* yacc.c:1646  */
+    break;
+
+  case 23:
+#line 224 "small.y" /* yacc.c:1646  */
     {
 		(yyval.integer) = 1;
 		strcpy(id, (yyvsp[0].ident));
-		enter(parameter);
+		enter(variable);
 		gen(sto, lev-table[symbolTablePoint].level, table[symbolTablePoint].adr); /* 存变量 */
 	}
-#line 1604 "small.tab.c" /* yacc.c:1646  */
+#line 1624 "small.tab.c" /* yacc.c:1646  */
     break;
 
-  case 25:
-#line 224 "small.y" /* yacc.c:1646  */
+  case 24:
+#line 230 "small.y" /* yacc.c:1646  */
     {
 		(yyval.integer) = (yyvsp[-2].integer)+1;
 		strcpy(id, (yyvsp[0].ident));
-		enter(parameter);
+		enter(variable);
 		gen(sto, lev-table[symbolTablePoint].level, table[symbolTablePoint].adr); /* 存变量 */
 	}
-#line 1615 "small.tab.c" /* yacc.c:1646  */
+#line 1635 "small.tab.c" /* yacc.c:1646  */
     break;
 
-  case 27:
-#line 234 "small.y" /* yacc.c:1646  */
-    {
-	procTablePoint++;
-}
-#line 1623 "small.tab.c" /* yacc.c:1646  */
-    break;
-
-  case 28:
+  case 25:
 #line 237 "small.y" /* yacc.c:1646  */
+    {
+	procRecordPtr++;
+}
+#line 1643 "small.tab.c" /* yacc.c:1646  */
+    break;
+
+  case 26:
+#line 240 "small.y" /* yacc.c:1646  */
     {
 	lev--;
 }
-#line 1631 "small.tab.c" /* yacc.c:1646  */
+#line 1651 "small.tab.c" /* yacc.c:1646  */
     break;
 
-  case 29:
-#line 240 "small.y" /* yacc.c:1646  */
-    {
-	procTablePoint--;
-}
-#line 1639 "small.tab.c" /* yacc.c:1646  */
-    break;
-
-  case 30:
+  case 27:
 #line 243 "small.y" /* yacc.c:1646  */
     {
 	lev++;
@@ -1646,379 +1658,423 @@ yyreduce:
 		yyerror("level overflow");
 	}
 }
-#line 1650 "small.tab.c" /* yacc.c:1646  */
+#line 1662 "small.tab.c" /* yacc.c:1646  */
     break;
 
-  case 40:
+  case 37:
 #line 264 "small.y" /* yacc.c:1646  */
     {
 		code[(yyvsp[-1].integer)].a = codeTablePoint;
 	}
-#line 1658 "small.tab.c" /* yacc.c:1646  */
+#line 1670 "small.tab.c" /* yacc.c:1646  */
     break;
 
-  case 41:
+  case 38:
 #line 267 "small.y" /* yacc.c:1646  */
     {
 		gen(jmp, 0, 0);
 		code[(yyvsp[-1].integer)].a = codeTablePoint;
 	}
-#line 1667 "small.tab.c" /* yacc.c:1646  */
+#line 1679 "small.tab.c" /* yacc.c:1646  */
     break;
 
-  case 42:
+  case 39:
 #line 270 "small.y" /* yacc.c:1646  */
     {
 		code[(yyvsp[-4].integer)].a = codeTablePoint;
 	}
-#line 1675 "small.tab.c" /* yacc.c:1646  */
+#line 1687 "small.tab.c" /* yacc.c:1646  */
     break;
 
-  case 43:
+  case 40:
 #line 275 "small.y" /* yacc.c:1646  */
     {
 		gen(jpc, 0, 0);
 		(yyval.integer) = (yyvsp[0].integer);
 	}
-#line 1684 "small.tab.c" /* yacc.c:1646  */
+#line 1696 "small.tab.c" /* yacc.c:1646  */
     break;
 
-  case 45:
+  case 42:
 #line 281 "small.y" /* yacc.c:1646  */
     {
 		gen(jpc, 0, (yyvsp[-3].integer));
 	}
-#line 1692 "small.tab.c" /* yacc.c:1646  */
+#line 1704 "small.tab.c" /* yacc.c:1646  */
     break;
 
-  case 46:
+  case 43:
 #line 286 "small.y" /* yacc.c:1646  */
     {
 		if ((yyvsp[-2].integer) == 0) {
 			yyerror("undeclared variable");	/* 未声明标识符 */
 			exit(1);
 		}
-		else if (table[(yyvsp[-2].integer)].kind != variable) {
-			yyerror("is not a variable");	/* 标识符非变量 */
-			exit(1);
+		if (globallocalswitch == 1) {
+			if (globalRecord[(yyvsp[-2].integer)].kind != variable) {
+				yyerror("is not a variable");	/* 标识符是过程 */
+				exit(1);
+			}
+			gen(sto, 0, globalRecord[(yyvsp[-2].integer)].adr); /* 存变量 */
 		}
-		gen(sto, lev-table[(yyvsp[-2].integer)].level, table[(yyvsp[-2].integer)].adr);
+		else {
+			if (localRecord[(yyvsp[-2].integer)].kind != variable) {
+				yyerror("is not a variable");	/* 标识符是过程 */
+				exit(1);
+			}
+			gen(sto, lev, localRecord[(yyvsp[-2].integer)].adr); /* 存变量 */
+		}
 	}
-#line 1708 "small.tab.c" /* yacc.c:1646  */
+#line 1729 "small.tab.c" /* yacc.c:1646  */
     break;
 
-  case 47:
-#line 299 "small.y" /* yacc.c:1646  */
+  case 44:
+#line 308 "small.y" /* yacc.c:1646  */
     {
 		if ((yyvsp[0].integer) == 0) {
 			yyerror("undeclared variable");	/* 未声明标识符 */
 			exit(1);
 		}
-		else if (table[(yyvsp[0].integer)].kind != variable) {
-			yyerror("is not a variable");	/* 标识符非变量 */
-			exit(1);
+		if (globallocalswitch == 1) {
+			if (globalRecord[(yyvsp[0].integer)].kind != variable) {
+				yyerror("is not a variable");	/* 标识符是过程 */
+				exit(1);
+			}
+			gen(opr, 0, 16); /* 读操作 */
+			gen(sto, 0, globalRecord[(yyvsp[0].integer)].adr); /* 存变量 */
 		}
-		gen(opr, 0, 16); /* 读操作 */
-		gen(sto, lev-table[(yyvsp[0].integer)].level, table[(yyvsp[0].integer)].adr); /* 存变量 */
+		else {
+			if (localRecord[(yyvsp[0].integer)].kind != variable) {
+				yyerror("is not a variable");	/* 标识符是过程 */
+				exit(1);
+			}
+			gen(opr, 0, 16); /* 读操作 */
+			gen(sto, lev, localRecord[(yyvsp[0].integer)].adr); /* 存变量 */
+		}
 	}
-#line 1725 "small.tab.c" /* yacc.c:1646  */
+#line 1756 "small.tab.c" /* yacc.c:1646  */
     break;
 
-  case 48:
-#line 313 "small.y" /* yacc.c:1646  */
+  case 45:
+#line 332 "small.y" /* yacc.c:1646  */
     {
 		gen(opr, 0, 14); /* 写操作 */
 		gen(opr, 0, 15);
 		(yyval.integer) = (yyvsp[0].integer);
 	}
-#line 1735 "small.tab.c" /* yacc.c:1646  */
+#line 1766 "small.tab.c" /* yacc.c:1646  */
     break;
 
-  case 49:
-#line 320 "small.y" /* yacc.c:1646  */
+  case 46:
+#line 339 "small.y" /* yacc.c:1646  */
     {
 		gen(jpc, 0, 0);
 	}
-#line 1743 "small.tab.c" /* yacc.c:1646  */
+#line 1774 "small.tab.c" /* yacc.c:1646  */
     break;
 
-  case 50:
-#line 322 "small.y" /* yacc.c:1646  */
+  case 47:
+#line 341 "small.y" /* yacc.c:1646  */
     {
 		gen(jmp, 0, (yyvsp[-9].integer));
 		code[(yyvsp[-5].integer)].a = codeTablePoint;
 	}
-#line 1752 "small.tab.c" /* yacc.c:1646  */
+#line 1783 "small.tab.c" /* yacc.c:1646  */
     break;
 
-  case 51:
-#line 328 "small.y" /* yacc.c:1646  */
+  case 48:
+#line 347 "small.y" /* yacc.c:1646  */
     {
 		if ((yyvsp[-3].integer) == 0) {
-			yyerror("undeclared procedure");	/* 未声明标识符 */
+			yyerror("undeclared procedure");	/* 未声明过程 */
 			exit(1);
 		}
-		else if (table[(yyvsp[-3].integer)].size != (yyvsp[-1].integer)) {
+		else if (procRecord[(yyvsp[-3].integer)].size != (yyvsp[-1].integer)) {
 			yyerror("wrong arguments");	/* 参数列表错误 */
 			exit(1);
 		}
-		gen(cal, lev-table[(yyvsp[-3].integer)].level, table[(yyvsp[-3].integer)].adr);
+		gen(cal, 0, procRecord[(yyvsp[-3].integer)].adr);
 	}
-#line 1768 "small.tab.c" /* yacc.c:1646  */
+#line 1799 "small.tab.c" /* yacc.c:1646  */
     break;
 
-  case 52:
-#line 341 "small.y" /* yacc.c:1646  */
+  case 49:
+#line 360 "small.y" /* yacc.c:1646  */
     {
 		(yyval.integer) = (yyvsp[0].integer);
 	}
-#line 1776 "small.tab.c" /* yacc.c:1646  */
+#line 1807 "small.tab.c" /* yacc.c:1646  */
     break;
 
-  case 53:
-#line 344 "small.y" /* yacc.c:1646  */
+  case 50:
+#line 363 "small.y" /* yacc.c:1646  */
     {
 		(yyval.integer) = 0;
 	}
-#line 1784 "small.tab.c" /* yacc.c:1646  */
+#line 1815 "small.tab.c" /* yacc.c:1646  */
     break;
 
-  case 54:
-#line 349 "small.y" /* yacc.c:1646  */
+  case 51:
+#line 368 "small.y" /* yacc.c:1646  */
     {
 		(yyval.integer) = 1;
 		if ((yyvsp[0].integer) == 0) {
 			yyerror("undeclared variable");	/* 未声明标识符 */
 			exit(1);
 		}
-		else if (table[(yyvsp[0].integer)].kind != variable) {
-			yyerror("is not a variable");	/* 标识符是过程 */
-			exit(1);
+		if (globallocalswitch == 1) {
+			if (globalRecord[(yyvsp[0].integer)].kind != variable) {
+				yyerror("is not a variable");	/* 标识符是过程 */
+				exit(1);
+			}
+			gen(lod, 0, globalRecord[(yyvsp[0].integer)].adr); /* 取变量 */
 		}
-		gen(lod, lev-table[(yyvsp[0].integer)].level, table[(yyvsp[0].integer)].adr); /* 取变量 */
+		else {
+			if (localRecord[(yyvsp[0].integer)].kind != variable) {
+				yyerror("is not a variable");	/* 标识符是过程 */
+				exit(1);
+			}
+			gen(lod, lev, localRecord[(yyvsp[0].integer)].adr); /* 取变量 */
+		}
 	}
-#line 1801 "small.tab.c" /* yacc.c:1646  */
+#line 1841 "small.tab.c" /* yacc.c:1646  */
     break;
 
-  case 55:
-#line 361 "small.y" /* yacc.c:1646  */
+  case 52:
+#line 389 "small.y" /* yacc.c:1646  */
     {
 		(yyval.integer) = (yyvsp[-2].integer)+1;
 		if ((yyvsp[0].integer) == 0) {
 			yyerror("undeclared variable");	/* 未声明标识符 */
 			exit(1);
 		}
-		else if (table[(yyvsp[0].integer)].kind != variable) {
-			yyerror("is not a variable");	/* 标识符是过程 */
-			exit(1);
+		if (globallocalswitch == 1) {
+			if (globalRecord[(yyvsp[0].integer)].kind != variable) {
+				yyerror("is not a variable");	/* 标识符是过程 */
+				exit(1);
+			}
+			gen(lod, 0, globalRecord[(yyvsp[0].integer)].adr); /* 取变量 */
 		}
-		gen(lod, lev-table[(yyvsp[0].integer)].level, table[(yyvsp[0].integer)].adr); /* 取变量 */
+		else {
+			if (localRecord[(yyvsp[0].integer)].kind != variable) {
+				yyerror("is not a variable");	/* 标识符是过程 */
+				exit(1);
+			}
+			gen(lod, lev, localRecord[(yyvsp[0].integer)].adr); /* 取变量 */
+		}
 	}
-#line 1818 "small.tab.c" /* yacc.c:1646  */
+#line 1867 "small.tab.c" /* yacc.c:1646  */
     break;
 
-  case 56:
-#line 376 "small.y" /* yacc.c:1646  */
+  case 53:
+#line 413 "small.y" /* yacc.c:1646  */
     {
 		(yyval.integer) = (yyvsp[0].integer)==0 ? 1:0;
 	}
-#line 1826 "small.tab.c" /* yacc.c:1646  */
+#line 1875 "small.tab.c" /* yacc.c:1646  */
     break;
 
-  case 57:
-#line 379 "small.y" /* yacc.c:1646  */
+  case 54:
+#line 416 "small.y" /* yacc.c:1646  */
     {
 		gen(opr, 0, 6);
 		(yyval.integer) = (yyvsp[0].integer)%2;
 	}
-#line 1835 "small.tab.c" /* yacc.c:1646  */
+#line 1884 "small.tab.c" /* yacc.c:1646  */
     break;
 
-  case 58:
-#line 383 "small.y" /* yacc.c:1646  */
+  case 55:
+#line 420 "small.y" /* yacc.c:1646  */
     {
 		gen(opr, 0, 8);
 		(yyval.integer) = (yyvsp[-2].integer)==(yyvsp[0].integer) ? 1:0;
 	}
-#line 1844 "small.tab.c" /* yacc.c:1646  */
+#line 1893 "small.tab.c" /* yacc.c:1646  */
     break;
 
-  case 59:
-#line 387 "small.y" /* yacc.c:1646  */
+  case 56:
+#line 424 "small.y" /* yacc.c:1646  */
     {
 		gen(opr, 0, 9);
 		(yyval.integer) = (yyvsp[-2].integer)!=(yyvsp[0].integer) ? 1:0;
 	}
-#line 1853 "small.tab.c" /* yacc.c:1646  */
+#line 1902 "small.tab.c" /* yacc.c:1646  */
     break;
 
-  case 60:
-#line 391 "small.y" /* yacc.c:1646  */
+  case 57:
+#line 428 "small.y" /* yacc.c:1646  */
     {
 		gen(opr, 0, 10);
 		(yyval.integer) = (yyvsp[-2].integer)<(yyvsp[0].integer) ? 1:0;
 	}
-#line 1862 "small.tab.c" /* yacc.c:1646  */
+#line 1911 "small.tab.c" /* yacc.c:1646  */
     break;
 
-  case 61:
-#line 395 "small.y" /* yacc.c:1646  */
+  case 58:
+#line 432 "small.y" /* yacc.c:1646  */
     {
 		gen(opr, 0, 11);
 		(yyval.integer) = (yyvsp[-2].integer)>(yyvsp[0].integer) ? 1:0;
 	}
-#line 1871 "small.tab.c" /* yacc.c:1646  */
+#line 1920 "small.tab.c" /* yacc.c:1646  */
     break;
 
-  case 62:
-#line 399 "small.y" /* yacc.c:1646  */
+  case 59:
+#line 436 "small.y" /* yacc.c:1646  */
     {
 		gen(opr, 0, 12);
 		(yyval.integer) = (yyvsp[-2].integer)>=(yyvsp[0].integer) ? 1:0;
 	}
-#line 1880 "small.tab.c" /* yacc.c:1646  */
+#line 1929 "small.tab.c" /* yacc.c:1646  */
     break;
 
-  case 63:
-#line 403 "small.y" /* yacc.c:1646  */
+  case 60:
+#line 440 "small.y" /* yacc.c:1646  */
     {
 		gen(opr, 0, 13);
 		(yyval.integer) = (yyvsp[-2].integer)<=(yyvsp[0].integer) ? 1:0;
 	}
-#line 1889 "small.tab.c" /* yacc.c:1646  */
+#line 1938 "small.tab.c" /* yacc.c:1646  */
     break;
 
-  case 64:
-#line 409 "small.y" /* yacc.c:1646  */
+  case 61:
+#line 446 "small.y" /* yacc.c:1646  */
     {
 		gen(opr, 0, 1);
 		(yyval.integer) = -1*(yyvsp[0].integer);
 		fprintf(stdout, "%d\n", (yyval.integer));
 	}
-#line 1899 "small.tab.c" /* yacc.c:1646  */
+#line 1948 "small.tab.c" /* yacc.c:1646  */
     break;
 
-  case 65:
-#line 414 "small.y" /* yacc.c:1646  */
+  case 62:
+#line 451 "small.y" /* yacc.c:1646  */
     {
 		gen(opr, 0, 2);
 		(yyval.integer) = (yyvsp[-2].integer)+(yyvsp[0].integer);
 		fprintf(stdout, "%d\n", (yyval.integer));
 	}
-#line 1909 "small.tab.c" /* yacc.c:1646  */
+#line 1958 "small.tab.c" /* yacc.c:1646  */
     break;
 
-  case 66:
-#line 419 "small.y" /* yacc.c:1646  */
+  case 63:
+#line 456 "small.y" /* yacc.c:1646  */
     {
 		gen(opr, 0, 3);
 		(yyval.integer) = (yyvsp[-2].integer)-(yyvsp[0].integer);
 		fprintf(stdout, "%d\n", (yyval.integer));
 	}
-#line 1919 "small.tab.c" /* yacc.c:1646  */
+#line 1968 "small.tab.c" /* yacc.c:1646  */
     break;
 
-  case 67:
-#line 424 "small.y" /* yacc.c:1646  */
+  case 64:
+#line 461 "small.y" /* yacc.c:1646  */
     {
 		gen(opr, 0, 4);
 		(yyval.integer) = (yyvsp[-2].integer)*(yyvsp[0].integer);
 		fprintf(stdout, "%d\n", (yyval.integer));
 	}
-#line 1929 "small.tab.c" /* yacc.c:1646  */
+#line 1978 "small.tab.c" /* yacc.c:1646  */
     break;
 
-  case 68:
-#line 429 "small.y" /* yacc.c:1646  */
+  case 65:
+#line 466 "small.y" /* yacc.c:1646  */
     {
 		gen(opr, 0, 5);
 		(yyval.integer) = (yyvsp[-2].integer)/(yyvsp[0].integer);
 		fprintf(stdout, "%d\n", (yyval.integer));
 	}
-#line 1939 "small.tab.c" /* yacc.c:1646  */
+#line 1988 "small.tab.c" /* yacc.c:1646  */
     break;
 
-  case 69:
-#line 434 "small.y" /* yacc.c:1646  */
+  case 66:
+#line 471 "small.y" /* yacc.c:1646  */
     {
 		gen(opr, 0, 17);
 		(yyval.integer) = (yyvsp[-2].integer)%(yyvsp[0].integer);
 		fprintf(stdout, "%d\n", (yyval.integer));
 	}
-#line 1949 "small.tab.c" /* yacc.c:1646  */
+#line 1998 "small.tab.c" /* yacc.c:1646  */
     break;
 
-  case 70:
-#line 439 "small.y" /* yacc.c:1646  */
+  case 67:
+#line 476 "small.y" /* yacc.c:1646  */
     {
 		gen(opr, 0, 18);
 		(yyval.integer) = (yyvsp[-2].integer)^(yyvsp[0].integer);
 		fprintf(stdout, "%d\n", (yyval.integer));
 	}
-#line 1959 "small.tab.c" /* yacc.c:1646  */
+#line 2008 "small.tab.c" /* yacc.c:1646  */
     break;
 
-  case 71:
-#line 444 "small.y" /* yacc.c:1646  */
+  case 68:
+#line 481 "small.y" /* yacc.c:1646  */
     {
 		(yyval.integer) = (yyvsp[-1].integer);
 		fprintf(stdout, "%d\n", (yyval.integer));
 	}
-#line 1968 "small.tab.c" /* yacc.c:1646  */
+#line 2017 "small.tab.c" /* yacc.c:1646  */
     break;
 
-  case 72:
-#line 448 "small.y" /* yacc.c:1646  */
+  case 69:
+#line 485 "small.y" /* yacc.c:1646  */
     {
 		gen(lit, 0, (yyvsp[0].integer));
 		(yyval.integer) = (yyvsp[0].integer);
 		fprintf(stdout, "%d\n", (yyval.integer));
 	}
-#line 1978 "small.tab.c" /* yacc.c:1646  */
+#line 2027 "small.tab.c" /* yacc.c:1646  */
     break;
 
-  case 73:
-#line 453 "small.y" /* yacc.c:1646  */
+  case 70:
+#line 490 "small.y" /* yacc.c:1646  */
     {
 		int i = position((yyvsp[0].ident));	/* 查找标识符在符号表中的位置 */
 		if (i==0) {
 			yyerror("undefined variable");	/* 标识符未声明，只能使用本层的标识符 */
 		}
-		else {
-			switch (table[i].kind) {
+		if (globallocalswitch == 1) {
+			switch (globalRecord[i].kind) {
 				case constant:	/* 标识符为常量 */
-					gen(lit, 0, table[i].val);	/* 直接把常量的值入栈 */
+					gen(lit, 0, globalRecord[i].val);	/* 直接把常量的值入栈 */
 					break;
 				case variable:	/* 标识符为变量 */
-					gen(lod, lev-table[i].level, table[i].adr);	/* 找到变量地址并将其值入栈 */
+					gen(lod, 0, globalRecord[i].adr);	/* 找到变量地址并将其值入栈 */
 					break;
-				case procedure:	/* 标识符为过程 */
-					yyerror("cannot be procedure");	/* 不能为过程 */
+			}
+		}
+		else {
+			switch (localRecord[i].kind) {
+				case constant:	/* 标识符为常量 */
+					gen(lit, 0, localRecord[i].val);	/* 直接把常量的值入栈 */
+					break;
+				case variable:	/* 标识符为变量 */
+					gen(lod, lev, localRecord[i].adr);	/* 找到变量地址并将其值入栈 */
 					break;
 			}
 		}
 	}
-#line 2002 "small.tab.c" /* yacc.c:1646  */
+#line 2058 "small.tab.c" /* yacc.c:1646  */
     break;
 
-  case 74:
-#line 474 "small.y" /* yacc.c:1646  */
+  case 71:
+#line 518 "small.y" /* yacc.c:1646  */
     {
 		(yyval.integer) = position((yyvsp[0].ident));
 	}
-#line 2010 "small.tab.c" /* yacc.c:1646  */
+#line 2066 "small.tab.c" /* yacc.c:1646  */
     break;
 
-  case 75:
-#line 479 "small.y" /* yacc.c:1646  */
+  case 72:
+#line 523 "small.y" /* yacc.c:1646  */
     {
 		(yyval.integer) = proc_position((yyvsp[0].ident));
 	}
-#line 2018 "small.tab.c" /* yacc.c:1646  */
+#line 2074 "small.tab.c" /* yacc.c:1646  */
     break;
 
 
-#line 2022 "small.tab.c" /* yacc.c:1646  */
+#line 2078 "small.tab.c" /* yacc.c:1646  */
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -2246,7 +2302,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 482 "small.y" /* yacc.c:1906  */
+#line 526 "small.y" /* yacc.c:1906  */
 
 int yyerror(char *s) {
 	err++;
@@ -2255,47 +2311,98 @@ int yyerror(char *s) {
 	return 0;
 }
 void enter(enum object k) {
-	symbolTablePoint++;
-	strcpy(table[symbolTablePoint].name, id); /* 符号表的name域记录标识符的名字 */
-	table[symbolTablePoint].kind = k;	
-	switch (k) {
-		case constant:	/* 常量 */
-			table[symbolTablePoint].val = num; /* 登记常数的值 */
-			table[symbolTablePoint].level = lev;
-			break;
-		case variable:	/* 变量 */
-			table[symbolTablePoint].val = 0; /* 变量默认初始值为0 */
-			table[symbolTablePoint].level = lev;
-			break;
-		case procedure:	/* 过程 */
-			table[symbolTablePoint].level = lev;
-			break;
-		case parameter: /* 参数 */
-			table[symbolTablePoint].level = lev;
-			break;
+	if (globallocalswitch == 1) {
+		switch (k) {
+			case constant:	/* 常量 */
+				globalRecordPtr++;
+				strcpy(globalRecord[globalRecordPtr].name, id); /* 符号表的name域记录标识符的名字 */
+				globalRecord[globalRecordPtr].kind = k;	
+				globalRecord[globalRecordPtr].val = num; /* 登记常数的值 */
+				globalRecord[globalRecordPtr].level = 0;
+				break;
+			case variable:	/* 变量 */
+				globalRecordPtr++;
+				strcpy(globalRecord[globalRecordPtr].name, id); /* 符号表的name域记录标识符的名字 */
+				globalRecord[globalRecordPtr].kind = k;	
+				globalRecord[globalRecordPtr].val = 0; /* 变量默认初始值为0 */
+				globalRecord[globalRecordPtr].level = 0;
+				globalRecord[globalRecordPtr].adr = globalRecordPtr;
+				break;
+			case procedure:	/* 过程 */
+				procRecordPtr++;
+				strcpy(procRecord[procRecordPtr].name, id); /* 符号表的name域记录标识符的名字 */
+				procRecord[procRecordPtr].kind = k;	
+				procRecord[procRecordPtr].level = lev;
+				procRecord[procRecordPtr].adr = codeTablePoint;
+				procRecord[procRecordPtr].size = num;
+				break;
+		}
 	}
+	else {
+		switch (k) {
+			case constant:	/* 常量 */
+				localRecordPtr++;
+				strcpy(localRecord[localRecordPtr].name, id); /* 符号表的name域记录标识符的名字 */
+				localRecord[localRecordPtr].kind = k;	
+				localRecord[localRecordPtr].val = num; /* 登记常数的值 */
+				localRecord[localRecordPtr].level = lev;
+				break;
+			case variable:	/* 变量 */
+				localRecordPtr++;
+				strcpy(localRecord[localRecordPtr].name, id); /* 符号表的name域记录标识符的名字 */
+				localRecord[localRecordPtr].kind = k;	
+				localRecord[localRecordPtr].val = 0; /* 变量默认初始值为0 */
+				localRecord[localRecordPtr].level = lev;
+				break;
+			case procedure:	/* 过程 */
+				procRecordPtr++;
+				strcpy(procRecord[procRecordPtr].name, id); /* 符号表的name域记录标识符的名字 */
+				procRecord[procRecordPtr].kind = k;	
+				procRecord[procRecordPtr].level = lev;
+				procRecord[procRecordPtr].adr = codeTablePoint;
+				procRecord[procRecordPtr].size = num;
+				break;
+		}
+	}
+	
 }
 void init() {
 	symbolTablePoint = 0;
 	codeTablePoint = 0;
 	procTablePoint = 0;
+	procRecordPtr = 0;
+	localRecordPtr = 0;
+	globalRecordPtr = 0;
+	globallocalswitch = 1;
 	lev = 0;
 	proctable[0] = 0;
 	num = 0;
+	procDeclFinished = 0;
 	err = 0;
 }
 int position(char* id) {
-	int i = symbolTablePoint;
-	strcpy(table[0].name, id);
-	while (strcmp(table[i].name, id)!=0 || table[i].level!=lev || table[i].kind==procedure) {
+	globallocalswitch = 0; // 先在变量中找
+	int i = localRecordPtr;
+	strcpy(localRecord[0].name, id);
+	localRecord[0].level = lev;
+	while (strcmp(localRecord[i].name, id)!=0 || localRecord[i].level!=lev) {
         i--;
     }
+	if (i == 0) {
+		globallocalswitch = 1; // 在全局变量中找
+		strcpy(globalRecord[0].name, id);
+		i = globalRecordPtr;
+		while (strcmp(globalRecord[i].name, id) != 0) {
+        	i--;
+    	}
+		return i;
+	}
 	return i;
 }
 int proc_position(char* id) {
-	int i = symbolTablePoint;
-	strcpy(table[0].name, id);
-	while (strcmp(table[i].name, id)!=0 || table[i].kind!=procedure) {
+	int i = procRecordPtr;
+	strcpy(procRecord[0].name, id);
+	while (strcmp(procRecord[i].name, id) != 0) {
         i--;
     }
 	return i;
@@ -2304,8 +2411,7 @@ void setdx(int n) {
 	int i;
 	printf("setdx(%d)\n", n);
 	for (i=1; i<=n; i++) {
-		table[symbolTablePoint-i+1].adr = n-i+3;
-		printf("%s: %d\n", table[symbolTablePoint-i+1].name, table[symbolTablePoint-i+1].adr);
+		localRecord[localRecordPtr-i+1].adr = n-i+3;
 	}
 }
 void gen(enum fct x, int y, int z) {
@@ -2337,25 +2443,44 @@ void listall() {
 void displaytable() {
 	int i;
 	if (tableswitch) {
-		for (i = 1; i <= symbolTablePoint; i++) {
-			switch(table[i].kind) {
+		printf("==================Procedure Table================\n");
+		for (i = 1; i <= procRecordPtr; i++) {
+			printf("    %d proc  %s ", i, procRecord[i].name);
+			printf("lev=%d addr=%d size=%d\n", procRecord[i].level, procRecord[i].adr, procRecord[i].size);
+			fprintf(ftable,"    %d proc  %s ", i, procRecord[i].name);
+			fprintf(ftable,"lev=%d addr=%d size=%d\n", procRecord[i].level, procRecord[i].adr, procRecord[i].size);
+		}
+		printf("==================Global Table================\n");
+		for (i = 1; i <= globalRecordPtr; i++) {
+			switch(globalRecord[i].kind) {
 				case constant:
-					printf("    %d const %s ", i, table[i].name);
-					printf("val=%d\n", table[i].val);
-					fprintf(ftable, "    %d const %s ", i, table[i].name);
-					fprintf(ftable, "val=%d\n", table[i].val);
+					printf("    %d const %s ", i, globalRecord[i].name);
+					printf("val=%d\n", globalRecord[i].val);
+					fprintf(ftable, "    %d const %s ", i, globalRecord[i].name);
+					fprintf(ftable, "val=%d\n", globalRecord[i].val);
 					break;
 				case variable:
-					printf("    %d var   %s ", i, table[i].name);
-					printf("lev=%d addr=%d\n", table[i].level, table[i].adr);
-					fprintf(ftable, "    %d var   %s ", i, table[i].name);
-					fprintf(ftable, "lev=%d addr=%d\n", table[i].level, table[i].adr);
+					printf("    %d var   %s ", i, globalRecord[i].name);
+					printf("lev=%d addr=%d\n", globalRecord[i].level, globalRecord[i].adr);
+					fprintf(ftable, "    %d var   %s ", i, globalRecord[i].name);
+					fprintf(ftable, "lev=%d addr=%d\n", globalRecord[i].level, globalRecord[i].adr);
 					break;
-				case procedure:
-					printf("    %d proc  %s ", i, table[i].name);
-					printf("lev=%d addr=%d size=%d\n", table[i].level, table[i].adr, table[i].size);
-					fprintf(ftable,"    %d proc  %s ", i, table[i].name);
-					fprintf(ftable,"lev=%d addr=%d size=%d\n", table[i].level, table[i].adr, table[i].size);
+			}
+		}
+		printf("==================Local Table================\n");
+		for (i = 1; i <= localRecordPtr; i++) {
+			switch(localRecord[i].kind) {
+				case constant:
+					printf("    %d const %s ", i, localRecord[i].name);
+					printf("val=%d\n", localRecord[i].val);
+					fprintf(ftable, "    %d const %s ", i, localRecord[i].name);
+					fprintf(ftable, "val=%d\n", localRecord[i].val);
+					break;
+				case variable:
+					printf("    %d var   %s ", i, localRecord[i].name);
+					printf("lev=%d addr=%d\n", localRecord[i].level, localRecord[i].adr);
+					fprintf(ftable, "    %d var   %s ", i, localRecord[i].name);
+					fprintf(ftable, "lev=%d addr=%d\n", localRecord[i].level, localRecord[i].adr);
 					break;
 			}
 		}
@@ -2478,14 +2603,16 @@ void interpret()
 				break;
 			case lod:	/* 取相对当前过程的数据基地址为a的内存的值到栈顶 */
 				t = t + 1;
-				s[t] = s[base(i.l,s,b) + i.a];				
+				if (i.l == 0) s[t] = globalRecord[i.a].val;
+				else s[t] = localRecord[i.a].val;
 				break;
 			case sto:	/* 栈顶的值存到相对当前过程的数据基地址为a的内存 */
-				s[base(i.l, s, b) + i.a] = s[t];
+				if (i.l == 0) globalRecord[i.a].val = s[t];
+				else localRecord[i.a].val = s[t];
 				t = t - 1;
 				break;
 			case cal:	/* 调用子过程 */
-				s[t + 1] = base(i.l, s, b);	/* 将父过程基地址入栈，即建立静态链 */
+				s[t + 1] = 0;	/* 将父过程基地址入栈，即建立静态链 */
 				s[t + 2] = b;	/* 将本过程基地址入栈，即建立动态链 */
 				s[t + 3] = p;	/* 将当前指令指针入栈，即保存返回地址 */
 				b = t + 1;	/* 改变基地址指针值为新过程的基地址 */
@@ -2508,18 +2635,6 @@ void interpret()
 	printf("End small\n");
 	fprintf(fresult,"End small\n");
 }
-int base(int l, int* s, int b)
-{
-	int b1;
-	b1 = b;
-	while (l > 0)
-	{
-		b1 = s[b1];
-		l--;
-	}
-	return b1;
-}
-
 /* 主程序开始 */
 int main()
 {
@@ -2581,6 +2696,7 @@ int main()
 		printf("\n%d errors in pl/0 program!\n",err);
 		fprintf(foutput,"\n%d errors in pl/0 program!\n",err);
 	}
+	displaytable();
 		
     fclose(ftable);
 	fclose(foutput);
