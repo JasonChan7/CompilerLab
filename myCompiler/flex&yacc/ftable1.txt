@@ -1,0 +1,16 @@
+    1 const a val=10
+    2 const b val=20
+    3 var   c lev=0 addr=3
+    4 var   d lev=0 addr=4
+    5 proc  test lev=0 addr=1 size=0
+    6 const A val=99
+    7 const b val=100
+    8 var   x lev=1 addr=3
+    9 var   y lev=1 addr=4
+
+    1 const a val=10
+    2 const b val=20
+    3 var   c lev=0 addr=3
+    4 var   d lev=0 addr=4
+    5 proc  test lev=0 addr=1 size=0
+

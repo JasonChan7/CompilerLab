@@ -1,17 +1,21 @@
 const a:=10, b:=20;
 var c, d;
-def test();
+def test(m, n);
     begin
         const A:=99, b:=100;
         var x, y;
         write A;
         write b;
-        x:=99;
-        y:=100;
+        x:=m;
+        y:=n;
+        m:=A;
+        n:=b;
         write x;
         write y
     end
-
-call test();
+c:=b;
+d:=a;
+call test(c, d);
 write c;
 write d
+

@@ -88,7 +88,7 @@
 	void setdx(int n);
 	void listall();
 	void displaytable();
-	void outputStack(int *s, int t);
+	void outputStack(int i, int *s, int t);
 %}
 %union {
 	int integer; /* integer value */ 
@@ -200,11 +200,11 @@ proc_decls:
 	}
 	;
 proc_decl: 
-	increase_procTablePoint PROC IDENT increase_level '(' para_list ')' ';' {
+	increase_procTablePoint PROC IDENT {
 		strcpy(id, $3);
 		enter(procedure);
 		proctable[procTablePoint] = symbolTablePoint;
-	}
+	} increase_level '(' para_list ')' ';' 
 	;
 para_list:
 	para_stmt {
@@ -595,8 +595,8 @@ void displaytable() {
 		fprintf(ftable,"\n");
 	}
 }
-void outputStack(int *s, int t) {
-	printf("==================================\n");
+void outputStack(int cnt, int *s, int t) {
+	printf("%d:=================================\n", cnt);
 	int i;
 	for(i = 0; i <= t; i++) {
 		printf("%d: %d\n", i, s[i]);
@@ -620,7 +620,7 @@ void interpret()
 	do {
 	    i = code[p];	/* 读当前指令 */
 		p = p + 1;
-		outputStack(s, t);
+		int myPtr = p-1;
 		switch (i.f)
 		{
 			case lit:	/* 将常量a的值取到栈顶 */
@@ -735,6 +735,7 @@ void interpret()
 				t = t - 1;
 				break;
 		}
+		outputStack(myPtr, s, t);
 	} while (p != 0);
 	printf("End small\n");
 	fprintf(fresult,"End small\n");
