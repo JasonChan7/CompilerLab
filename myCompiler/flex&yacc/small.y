@@ -123,15 +123,17 @@ program:
 	get_code_addr {
 		gen(jmp, 0, 0);
 	} open_globallocalswitch
+	MYBEGIN proc_predecls END
   	const_decl
-  	var_decl 
+  	var_decl
 	close_globallocalswitch
-  	proc_decls {
+  	proc_decls increase_procRecord {
 		code[$<integer>1].a = codeTablePoint;
-		procRecord[1].adr = codeTablePoint;
+		procRecord[procRecordPtr].adr = codeTablePoint;
+		strcpy(procRecord[procRecordPtr].name, "___main__");
 		displaytable();
 		procDeclFinished = 1;
-		printf("fk: %d\n", $<integer>4);
+		printf("fk: %d\n", $<integer>7);
 		gen(ini, 0, 3);
 	} stmt_sequence {
 		gen(opr, 0, 0);
@@ -150,6 +152,13 @@ open_globallocalswitch: {
 close_globallocalswitch: {
 	globallocalswitch = 0;
 };
+get_globallocalswitch: {
+	$<integer>$ = globallocalswitch;
+}
+proc_predecls:
+	proc_predecls increase_procRecord proc_decl decrease_level
+	|
+	;
 const_decl: 
 	CONST const_list ';' {
 		$<integer>$ = $<integer>2;
@@ -210,16 +219,28 @@ proc_decls:
 	}
 	;
 return_stmt:
-	RET expr ';' {
+	{
+		printf("line:%d\n", line);
+	} RET expr ';' {
+		
 		gen(ret, 0, 0);
 	}
 	;
 proc_decl: 
-	PROC IDENT increase_level '(' para_list ')' increase_procRecord ';' {
-		if (procDeclFinished == 0) {
+	PROC IDENT increase_level '(' para_list ')' ';' get_globallocalswitch get_code_addr {
+		if ($<integer>8 == 1) { //纯声明阶段
 			strcpy(id, $2);
 			num = $<integer>5;
 			enter(procedure);
+		}
+		else {
+			int i = proc_position($2);
+			if (i == 0) {
+				yyerror("undeclared procedure!");
+				exit(1);
+			}
+			num = i;
+			procRecord[i].adr = $<integer>9;
 		}
 		// setdx($<integer>5+3);
 		$<integer>$ = $<integer>5;
@@ -236,15 +257,19 @@ para_list:
 para_stmt:
 	IDENT {
 		$<integer>$ = 1;
-		strcpy(id, $1);
-		enter(variable);
-		gen(get, 0, localRecord[localRecordPtr].adr); /* 存变量 */
+		if (globallocalswitch == 0) {
+			strcpy(id, $1);
+			enter(variable);
+			gen(get, 0, localRecord[localRecordPtr].adr); /* 存变量 */
+		}
 	}
 	| IDENT ',' para_stmt {
 		$<integer>$ = $<integer>3+1;
-		strcpy(id, $1);
-		enter(variable);
-		gen(get, 0, localRecord[localRecordPtr].adr); /* 存变量 */
+		if (globallocalswitch == 0) {
+			strcpy(id, $1);
+			enter(variable);
+			gen(get, 0, localRecord[localRecordPtr].adr); /* 存变量 */
+		}
 	}
 	;
 increase_procRecord: {
@@ -262,10 +287,12 @@ increase_level: {
 
 stmt_sequence:
 	stmt_sequence ';' statement
-	| statement
+	| statement {
+		printf("line:%d\n", line);
+	}
 	;
 statement:
-	if_stmt
+	if_stmt 
 	| repeat_stmt
 	| assign_stmt
 	| read_stmt
@@ -275,20 +302,28 @@ statement:
 	;
 if_stmt:
 	if_stmt_no_else END {
+		printf("308:$<integer>1:%d\n", $<integer>1);
 		code[$<integer>1].a = codeTablePoint;
+		printf("309line:%d\n", line);
 	}
 	| if_stmt_no_else get_code_addr {
 		gen(jmp, 0, 0);
+		printf("314:$<integer>1:%d\n", $<integer>1);
 		code[$<integer>1].a = codeTablePoint;
+		printf("314line:%d\n", line);
 	} ELSE stmt_sequence ';' END {
 		code[$<integer>2].a = codeTablePoint;
+		printf("317line:%d\n", line);
 	}
 	;
 if_stmt_no_else:
 	IF expr get_code_addr {
 		gen(jpc, 0, 0);
 		$<integer>$ = $<integer>3;
-	} THEN stmt_sequence ';'
+		printf("326:$<integer>$:%d\n", $<integer>3);
+	} THEN stmt_sequence ';' {
+		$<integer>$ = $<integer>3;
+	}
 	;
 repeat_stmt:
 	REPEAT get_code_addr stmt_sequence ';' UNTIL expr {
@@ -301,13 +336,16 @@ assign_stmt:
 			yyerror("undeclared variable");	/* 未声明标识符 */
 			exit(1);
 		}
+		printf("line:%d\n", line);
 		int i = $<integer>1;
+		printf("330:i:%d\n", i);
 		printf("globallocalswitch:%d, lev:%d\n", globallocalswitch, lev);
 		if (i%2 == 0) {
 			if (globalRecord[i/2].kind != variable) {
 				yyerror("is not a variable");	/* 标识符是非变量 */
 				exit(1);
 			}
+			printf("337:globalRecord[i/2].name:%s\n", globalRecord[i/2].name);
 			gen(sto, 0, globalRecord[i/2].adr); /* 存变量 */
 		}
 		else {
@@ -383,6 +421,7 @@ while_stmt:
 	;
 call_stmt:
 	CALL get_table_addr proc_identifier '(' arg_list ')' {
+		printf("417:line:%d\n", line);
 		if ($<integer>3 == 0) {
 			yyerror("undeclared procedure");	/* 未声明过程 */
 			exit(1);
@@ -391,7 +430,7 @@ call_stmt:
 			yyerror("wrong arguments");	/* 参数列表错误 */
 			exit(1);
 		}
-		gen(cal, $<integer>5, procRecord[$<integer>3].adr-$<integer>5);
+		gen(cal, $<integer>5, $<integer>3);
 	}
 	;
 arg_list:
@@ -526,6 +565,7 @@ simple_expr:
 		}
 		if (i%2 == 0) {
 			i = i/2;
+			printf("560:name:%s\n", globalRecord[i].name);
 			switch (globalRecord[i].kind) {
 				case constant:	/* 标识符为常量 */
 					gen(lit, 0, globalRecord[i].val);	/* 直接把常量的值入栈 */
@@ -537,6 +577,7 @@ simple_expr:
 		}
 		else {
 			i = (i-1)/2;
+			printf("572:name:%s\n", localRecord[i].name);
 			switch (localRecord[i].kind) {
 				case constant:	/* 标识符为常量 */
 					gen(lit, 0, localRecord[i].val);	/* 直接把常量的值入栈 */
@@ -583,11 +624,10 @@ void enter(enum object k) {
 				globalRecord[globalRecordPtr].adr = globalRecordPtr;
 				break;
 			case procedure:	/* 过程 */
-				procRecordPtr++;
 				strcpy(procRecord[procRecordPtr].name, id); /* 符号表的name域记录标识符的名字 */
 				procRecord[procRecordPtr].kind = k;	
 				procRecord[procRecordPtr].level = lev;
-				procRecord[procRecordPtr].adr = codeTablePoint;
+				procRecord[procRecordPtr].adr = procRecordPtr;
 				procRecord[procRecordPtr].size = num;
 				break;
 		}
@@ -610,12 +650,7 @@ void enter(enum object k) {
 				localRecord[localRecordPtr].adr = localRecordPtr;
 				break;
 			case procedure:	/* 过程 */
-				procRecordPtr++;
-				strcpy(procRecord[procRecordPtr].name, id); /* 符号表的name域记录标识符的名字 */
-				procRecord[procRecordPtr].kind = k;	
-				procRecord[procRecordPtr].level = lev;
-				procRecord[procRecordPtr].adr = codeTablePoint;
-				procRecord[procRecordPtr].size = num;
+				procRecord[num].adr = codeTablePoint;
 				break;
 		}
 	}
@@ -877,7 +912,7 @@ void interpret()
 				printf("b:%d, t:%d, i.l:%d\n", b, t, i.l);
 				if (i.l != argtmpPtr) yyerror("wrong arguments number");
 				argPtr = i.l;
-				p = i.a;	/* 跳转 */
+				p = procRecord[i.a].adr-i.l;	/* 跳转 */
 				break;
 			case ret:
 				s[s[b+1]] = s[t];

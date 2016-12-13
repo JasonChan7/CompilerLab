@@ -1,0 +1,31 @@
+begin
+    def p();
+    def r();
+    def q();
+end
+var a,b;
+def p();
+    begin
+        var x;
+        x:=call r();
+        return x;
+    end
+def r();
+    begin
+        var x,y;
+        a:=a+1;
+        write a;
+        if a<b then call p(); end;
+        return a;          
+    end
+def q();
+    begin
+        var x;
+        if a<b then x:=call p(); end;
+        else x:=-1; end;
+        return x;
+    end
+
+a:=0;
+b:=2;
+call q()

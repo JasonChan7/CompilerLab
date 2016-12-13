@@ -1,6 +1,6 @@
 ==================Procedure Table================
-    1 proc  p lev=1 addr=2 size=1
-    2 proc  ___main__ lev=0 addr=10 size=0
+    1 proc   lev=0 addr=10 size=0
+    2 proc  p lev=1 addr=2 size=1
 ==================Global Table================
     1 const a val=10
     2 var   b lev=0 addr=2

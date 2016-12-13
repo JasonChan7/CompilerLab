@@ -1,0 +1,18 @@
+begin
+    def p(b);
+const a:=10;
+var b, c;
+def p(b);
+    begin    
+        var c;
+        c:=b+a;
+        return c;
+    end
+
+read b;
+while (b!=0) do
+begin
+    c := call p(b);
+    write 2*c;
+    read b;
+end

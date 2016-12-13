@@ -1,6 +1,4 @@
 Start small
-30
-10
-20
-30
+1
+2
 End small

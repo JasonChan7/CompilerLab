@@ -1,3 +1,6 @@
+begin
+    def p(b);
+end
 const a:=10;
 var b, c;
 def p(b);

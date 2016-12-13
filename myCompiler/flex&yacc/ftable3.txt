@@ -1,0 +1,14 @@
+==================Procedure Table================
+    1 proc  p lev=1 addr=1 size=0
+    2 proc  r lev=1 addr=7 size=0
+    3 proc  q lev=1 addr=23 size=0
+    4 proc  ___main__ lev=0 addr=37 size=0
+==================Global Table================
+    1 var   a lev=0 addr=1
+    2 var   b lev=0 addr=2
+==================Local Table================
+    1 var   x lev=1 addr=1
+    2 var   x lev=1 addr=2
+    3 var   y lev=1 addr=3
+    4 var   x lev=1 addr=4
+
