@@ -122,18 +122,16 @@
 program: 
 	get_code_addr {
 		gen(jmp, 0, 0);
-		globallocalswitch = 1;
-	}
+	} open_globallocalswitch
   	const_decl
-  	var_decl {
-		globallocalswitch = 0;
-	}
+  	var_decl 
+	close_globallocalswitch
   	proc_decls {
 		code[$<integer>1].a = codeTablePoint;
 		procRecord[1].adr = codeTablePoint;
 		displaytable();
 		procDeclFinished = 1;
-		printf("fk: %d\n", $<integer>3);
+		printf("fk: %d\n", $<integer>4);
 		gen(ini, 0, 3);
 	} stmt_sequence {
 		gen(opr, 0, 0);
@@ -145,6 +143,12 @@ get_code_addr: {
 };
 get_table_addr: {
 	$<integer>$ = localRecordPtr;
+};
+open_globallocalswitch: {
+	globallocalswitch = 1;
+};
+close_globallocalswitch: {
+	globallocalswitch = 0;
 };
 const_decl: 
 	CONST const_list ';' {
@@ -173,9 +177,6 @@ const_def:
 var_decl: 
 	VAR var_list ';' {
 		$<integer>$ = $<integer>2;
-		// if (globallocalswitch == 0) {
-		// 	setdx($<integer>2+3);
-		// }
 	}
 	| {
 		$<integer>$ = 0;
@@ -300,19 +301,21 @@ assign_stmt:
 			yyerror("undeclared variable");	/* 未声明标识符 */
 			exit(1);
 		}
-		if (globallocalswitch == 1) {
-			if (globalRecord[$<integer>1].kind != variable) {
+		int i = $<integer>1;
+		printf("globallocalswitch:%d, lev:%d\n", globallocalswitch, lev);
+		if (i%2 == 0) {
+			if (globalRecord[i/2].kind != variable) {
 				yyerror("is not a variable");	/* 标识符是非变量 */
 				exit(1);
 			}
-			gen(sto, 0, globalRecord[$<integer>1].adr); /* 存变量 */
+			gen(sto, 0, globalRecord[i/2].adr); /* 存变量 */
 		}
 		else {
-			if (localRecord[$<integer>1].kind != variable) {
+			if (localRecord[(i-1)/2].kind != variable) {
 				yyerror("is not a variable");	/* 标识符是非变量 */
 				exit(1);
 			}
-			gen(sto, lev, localRecord[$<integer>1].adr); /* 存变量 */
+			gen(sto, lev, localRecord[(i-1)/2].adr); /* 存变量 */
 		}
 	}
 	| identifier BC call_stmt {
@@ -320,19 +323,20 @@ assign_stmt:
 			yyerror("undeclared variable");	/* 未声明标识符 */
 			exit(1);
 		}
-		if (globallocalswitch == 1) {
-			if (globalRecord[$<integer>1].kind != variable) {
+		int i = $<integer>1;
+		if (i%2 == 0) {
+			if (globalRecord[i/2].kind != variable) {
 				yyerror("is not a variable");	/* 标识符是非变量 */
 				exit(1);
 			}
-			gen(res, 0, globalRecord[$<integer>1].adr); /* 存变量 */
+			gen(res, 0, globalRecord[i/2].adr); /* 存变量 */
 		}
 		else {
-			if (localRecord[$<integer>1].kind != variable) {
+			if (localRecord[(i-1)/2].kind != variable) {
 				yyerror("is not a variable");	/* 标识符是非变量 */
 				exit(1);
 			}
-			gen(res, lev, localRecord[$<integer>1].adr); /* 存变量 */
+			gen(res, lev, localRecord[(i-1)/2].adr); /* 存变量 */
 		}
 	}
 	;
@@ -342,21 +346,23 @@ read_stmt:
 			yyerror("undeclared variable");	/* 未声明标识符 */
 			exit(1);
 		}
-		if (globallocalswitch == 1) {
-			if (globalRecord[$<integer>2].kind != variable) {
-				yyerror("is not a variable");	/* 标识符是过程 */
+		int i = $<integer>2;
+		if (i%2 == 0) {
+			if (globalRecord[i/2].kind != variable) {
+				yyerror("is not a variable");	/* 标识符是非变量 */
 				exit(1);
 			}
 			gen(opr, 0, 16); /* 读操作 */
-			gen(sto, 0, globalRecord[$<integer>2].adr); /* 存变量 */
+			gen(sto, 0, globalRecord[i/2].adr); /* 存变量 */
 		}
 		else {
-			if (localRecord[$<integer>2].kind != variable) {
-				yyerror("is not a variable");	/* 标识符是过程 */
+			if (localRecord[(i-1)/2].kind != variable) {
+				yyerror("is not a variable");	/* 标识符是非变量 */
 				exit(1);
 			}
+			
 			gen(opr, 0, 16); /* 读操作 */
-			gen(sto, lev, localRecord[$<integer>2].adr); /* 存变量 */
+			gen(sto, lev, localRecord[(i-1)/2].adr); /* 存变量 */
 		}
 	}
 	;
@@ -403,11 +409,12 @@ arg_stmt:
 			yyerror("undeclared variable");	/* 未声明标识符 */
 			exit(1);
 		}
-		if (globallocalswitch == 1) {
-			gen(put, 0, globalRecord[$<integer>1].adr); /* 取变量 */
+		int i = $<integer>1;
+		if (i%2 == 0) {
+			gen(put, 0, globalRecord[i/2].adr); /* 取变量 */
 		}
 		else {
-			gen(put, 1, localRecord[$<integer>1].adr); /* 取变量 */
+			gen(put, 1, localRecord[(i-1)/2].adr); /* 取变量 */
 		}
 	}
 	| arg_stmt ',' identifier {
@@ -416,19 +423,20 @@ arg_stmt:
 			yyerror("undeclared variable");	/* 未声明标识符 */
 			exit(1);
 		}
-		if (globallocalswitch == 1) {
-			if (globalRecord[$<integer>3].kind != variable) {
+		int i = $<integer>3;
+		if (i%2 == 0) {
+			if (globalRecord[i/2].kind != variable) {
 				yyerror("is not a variable");	/* 标识符是过程 */
 				exit(1);
 			}
-			gen(put, 0, globalRecord[$<integer>3].adr); /* 取变量 */
+			gen(put, 0, globalRecord[i/2].adr); /* 取变量 */
 		}
 		else {
-			if (localRecord[$<integer>3].kind != variable) {
+			if (localRecord[(i-1)/2].kind != variable) {
 				yyerror("is not a variable");	/* 标识符是过程 */
 				exit(1);
 			}
-			gen(put, 1, localRecord[$<integer>3].adr); /* 取变量 */
+			gen(put, 1, localRecord[(i-1)/2].adr); /* 取变量 */
 		}
 	}
 	;
@@ -516,7 +524,8 @@ simple_expr:
 		if (i==0) {
 			yyerror("undefined variable");	/* 标识符未声明，只能使用本层的标识符 */
 		}
-		if (globallocalswitch == 1) {
+		if (i%2 == 0) {
+			i = i/2;
 			switch (globalRecord[i].kind) {
 				case constant:	/* 标识符为常量 */
 					gen(lit, 0, globalRecord[i].val);	/* 直接把常量的值入栈 */
@@ -527,6 +536,7 @@ simple_expr:
 			}
 		}
 		else {
+			i = (i-1)/2;
 			switch (localRecord[i].kind) {
 				case constant:	/* 标识符为常量 */
 					gen(lit, 0, localRecord[i].val);	/* 直接把常量的值入栈 */
@@ -626,7 +636,6 @@ void init() {
 	err = 0;
 }
 int position(char* id) {
-	globallocalswitch = 0; // 先在变量中找
 	int i = localRecordPtr;
 	strcpy(localRecord[0].name, id);
 	localRecord[0].level = lev;
@@ -634,15 +643,15 @@ int position(char* id) {
         i--;
     }
 	if (i == 0) {
-		globallocalswitch = 1; // 在全局变量中找
 		strcpy(globalRecord[0].name, id);
 		i = globalRecordPtr;
 		while (strcmp(globalRecord[i].name, id) != 0) {
         	i--;
     	}
-		return i;
+		return i*2;
 	}
-	return i;
+	printf("id:%s, lev:%d, i:%d\n", id, lev, i);
+	return i*2+1;
 }
 int proc_position(char* id) {
 	int i = procRecordPtr;

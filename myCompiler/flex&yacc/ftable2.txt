@@ -1,0 +1,11 @@
+==================Procedure Table================
+    1 proc   lev=0 addr=10 size=0
+    2 proc  p lev=1 addr=2 size=1
+==================Global Table================
+    1 const a val=10
+    2 var   b lev=0 addr=2
+    3 var   c lev=0 addr=3
+==================Local Table================
+    1 var   b lev=1 addr=1
+    2 var   c lev=1 addr=2
+
