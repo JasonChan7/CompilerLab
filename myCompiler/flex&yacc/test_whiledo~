@@ -1,0 +1,14 @@
+/* 
+test for while do
+*/
+var i, sum;
+sum:=0;
+i:=0;
+
+while(i<10) do
+begin
+  i++;
+  sum:=sum+i;
+  write i
+end;
+write sum

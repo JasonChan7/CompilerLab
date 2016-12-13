@@ -65,15 +65,18 @@ extern int yydebug;
     WHILE = 275,
     DO = 276,
     RET = 277,
-    IFX = 278,
-    BC = 279,
-    GT = 280,
-    LT = 281,
-    GE = 282,
-    LE = 283,
-    EQ = 284,
-    NE = 285,
-    UMINUS = 286
+    FOR = 278,
+    IFX = 279,
+    BC = 280,
+    GT = 281,
+    LT = 282,
+    GE = 283,
+    LE = 284,
+    EQ = 285,
+    NE = 286,
+    INC = 287,
+    DEC = 288,
+    UMINUS = 289
   };
 #endif
 
@@ -87,7 +90,7 @@ union YYSTYPE
 	int integer; /* integer value */ 
 	char *ident; /* identifier */ 
 
-#line 91 "small.tab.h" /* yacc.c:1909  */
+#line 94 "small.tab.h" /* yacc.c:1909  */
 };
 # define YYSTYPE_IS_TRIVIAL 1
 # define YYSTYPE_IS_DECLARED 1

@@ -9,10 +9,13 @@ int yyerror(char *);
 %}
 %%
 \/\*(.|\n)*?\*\/ ; /* ignore comments */
+"//".*
 [ \t]+ ; /* ignore whitespace */
 [\n] {
     line++;
 }
+"++" return INC;
+"--" return DEC;
  /* match the add-op, mul-op, bracket and etc. */
 [-()=+%*/;.,] {
     return yytext[0];
@@ -44,6 +47,7 @@ int yyerror(char *);
 "while"     return WHILE;
 "do"        return DO;
 "return"    return RET;
+"for"       return FOR;
  /* recognize identifier */
 [A-Za-z]([A-Za-z]|[0-9])* {
     yylval.ident = (char*)malloc(strlen(yytext)+1);

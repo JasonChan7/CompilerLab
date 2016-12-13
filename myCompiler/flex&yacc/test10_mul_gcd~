@@ -14,16 +14,16 @@ def multiply();
         z:=z+a;
         a:=2*a;
         b:=b/2;
-      end;
+      end
     end;
     return z;   
   end
 
-def gcd(a, b);
+def gcd(x, y);
   begin
     var ans;
-    if b==0 then ans:=a;
-    else ans:=call gcd(b, a%b); end;
+    if y==0 then ans:=x;
+    else ans:=call gcd(y, x%y); end;
     return ans;
   end
 
@@ -32,4 +32,4 @@ y:=n;
 write call multiply();
 x:=84;
 y:=36;
-write call gcd(x, y);
+write call gcd(x, y)

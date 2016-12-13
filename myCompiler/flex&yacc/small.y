@@ -108,14 +108,15 @@
 }
 %token <ident> IDENT
 %token <integer> INTEGER
-%token IF THEN ELSE END REPEAT UNTIL READ WRITE CALL CONST VAR MYBEGIN XOR ODD PROC WHILE DO RET
+%token IF THEN ELSE END REPEAT UNTIL READ WRITE CALL CONST VAR MYBEGIN XOR ODD PROC WHILE DO RET FOR
 %nonassoc IFX
 %nonassoc ELSE
 %token BC GT LT GE LE EQ NE
+%token INC DEC
 %left '+' '-'
 %left '*' '/' '%'
 %left XOR
-%left ODD
+%right ODD
 %nonassoc UMINUS
 %type <integer> get_code_addr get_table_addr /* 记录本层标识符的初始位置 */
 %%
@@ -301,8 +302,10 @@ statement:
 	| read_stmt
 	| write_stmt
 	| while_stmt
+	| dowhile_stmt
 	| call_stmt
 	| return_stmt
+	| for_stmt
 	;
 if_stmt:
 	if_stmt_no_else END {
@@ -357,6 +360,60 @@ assign_stmt:
 				yyerror("is not a variable");	/* 标识符是非变量 */
 				exit(1);
 			}
+			gen(sto, lev, localRecord[(i-1)/2].adr); /* 存变量 */
+		}
+	}
+	| identifier INC {
+		if ($<integer>1 == 0) {
+			yyerror("undeclared variable");	/* 未声明标识符 */
+			exit(1);
+		}
+		printf("371: reco INC!\n");
+		int i = $<integer>1;
+		if (i%2 == 0) {
+			if (globalRecord[i/2].kind != variable) {
+				yyerror("is not a variable");	/* 标识符是非变量 */
+				exit(1);
+			}
+			gen(lod, 0, globalRecord[i/2].adr);
+			gen(lit, 0, 1);
+			gen(opr, 0, 2);
+			gen(sto, 0, globalRecord[i/2].adr); /* 存变量 */
+		}
+		else {
+			if (localRecord[(i-1)/2].kind != variable) {
+				yyerror("is not a variable");	/* 标识符是非变量 */
+				exit(1);
+			}
+			gen(lod, 0, localRecord[(i-1)/2].adr);
+			gen(lit, 0, 1);
+			gen(opr, 0, 3);
+			gen(sto, lev, localRecord[(i-1)/2].adr); /* 存变量 */
+		}
+	}
+	| identifier DEC {
+		if ($<integer>1 == 0) {
+			yyerror("undeclared variable");	/* 未声明标识符 */
+			exit(1);
+		}
+		printf("399: reco DEC!\n");
+		int i = $<integer>1;
+		if (i%2 == 0) {
+			if (globalRecord[i/2].kind != variable) {
+				yyerror("is not a variable");	/* 标识符是非变量 */
+				exit(1);
+			}
+			gen(lod, 0, globalRecord[i/2].adr);
+			gen(lit, 0, 1);
+			gen(sto, 0, globalRecord[i/2].adr); /* 存变量 */
+		}
+		else {
+			if (localRecord[(i-1)/2].kind != variable) {
+				yyerror("is not a variable");	/* 标识符是非变量 */
+				exit(1);
+			}
+			gen(lod, 0, localRecord[(i-1)/2].adr);
+			gen(lit, 0, 1);
 			gen(sto, lev, localRecord[(i-1)/2].adr); /* 存变量 */
 		}
 	}
@@ -416,13 +473,35 @@ write_stmt:
 	}
 	;
 while_stmt:
-	WHILE get_code_addr '(' expr ')' get_code_addr {
+	WHILE get_code_addr expr get_code_addr {
 		gen(jpc, 0, 0);
-	} DO MYBEGIN stmt_sequence ';' END {
+	} DO MYBEGIN stmt_sequence END {
 		gen(jmp, 0, $<integer>2);
-		code[$<integer>6].a = codeTablePoint;
+		code[$<integer>4].a = codeTablePoint;
 	}
 	;
+dowhile_stmt:
+	DO get_code_addr stmt_sequence WHILE expr {
+    	gen(jpc, 0, codeTablePoint+2);
+    	gen(jmp, 0, $<integer>2);
+    }
+    ;
+for_stmt:
+	FOR '(' assign_stmt ';' get_code_addr expr get_code_addr {
+		gen(jpc, 0, 0);
+		gen(jmp, 0, 0);
+	}';' assign_stmt {
+		gen(jmp, 0, 0);
+	}')' get_code_addr MYBEGIN stmt_sequence ';' END get_code_addr {
+		printf("441:$<integer>5:%d\n",$<integer>5);
+		printf("442:$<integer>7:%d\n",$<integer>7);
+		printf("443:$<integer>13:%d\n",$<integer>13);
+		printf("444:$<integer>17:%d\n",$<integer>18);
+		gen(jmp, 0, $<integer>7+2);
+		code[$<integer>7].a = $<integer>18+1;
+		code[$<integer>7+1].a = $<integer>13;
+		code[$<integer>13-1].a = $<integer>5;
+	}
 call_stmt:
 	CALL get_table_addr proc_identifier '(' arg_list ')' {
 		printf("417:line:%d\n", line);
@@ -956,7 +1035,7 @@ void interpret()
 				t = t - 1;
 				break;
 		}
-		outputStack(myPtr, s, t);
+		// outputStack(myPtr, s, t);
 	} while (p != 0);
 	printf("End small\n");
 	fprintf(fresult,"End small\n");

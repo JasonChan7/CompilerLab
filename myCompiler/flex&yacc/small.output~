@@ -3,9 +3,6 @@ Terminals unused in grammar
    IFX
 
 
-State 154 conflicts: 1 shift/reduce
-
-
 Grammar
 
     0 $accept: program $end
@@ -107,9 +104,9 @@ Grammar
 
    59 $@7: %empty
 
-   60 while_stmt: WHILE get_code_addr '(' expr ')' get_code_addr $@7 DO MYBEGIN stmt_sequence ';' END
+   60 while_stmt: WHILE get_code_addr expr get_code_addr $@7 DO MYBEGIN stmt_sequence END
 
-   61 dowhile_stmt: DO get_code_addr stmt_sequence ';' WHILE '(' expr ')'
+   61 dowhile_stmt: DO get_code_addr stmt_sequence WHILE expr
 
    62 $@8: %empty
 
@@ -155,14 +152,14 @@ Terminals, with rules where they appear
 
 $end (0) 0
 '%' (37) 83
-'(' (40) 28 60 61 64 65 85
-')' (41) 28 60 61 64 65 85
+'(' (40) 28 64 65 85
+')' (41) 28 64 65 85
 '*' (42) 81
 '+' (43) 79
 ',' (44) 16 21 32 69
 '-' (45) 78 80
 '/' (47) 82
-';' (59) 13 18 24 27 28 36 50 52 53 60 61 64
+';' (59) 13 18 24 27 28 36 50 52 53 64
 error (256)
 IDENT (258) 17 22 28 31 32 88 89 90
 INTEGER (259) 17 87
@@ -787,7 +784,7 @@ State 50
 
 State 51
 
-   60 while_stmt: WHILE . get_code_addr '(' expr ')' get_code_addr $@7 DO MYBEGIN stmt_sequence ';' END
+   60 while_stmt: WHILE . get_code_addr expr get_code_addr $@7 DO MYBEGIN stmt_sequence END
 
     $default  reduce using rule 6 (get_code_addr)
 
@@ -796,7 +793,7 @@ State 51
 
 State 52
 
-   61 dowhile_stmt: DO . get_code_addr stmt_sequence ';' WHILE '(' expr ')'
+   61 dowhile_stmt: DO . get_code_addr stmt_sequence WHILE expr
 
     $default  reduce using rule 6 (get_code_addr)
 
@@ -1116,14 +1113,23 @@ State 83
 
 State 84
 
-   60 while_stmt: WHILE get_code_addr . '(' expr ')' get_code_addr $@7 DO MYBEGIN stmt_sequence ';' END
+   60 while_stmt: WHILE get_code_addr . expr get_code_addr $@7 DO MYBEGIN stmt_sequence END
 
-    '('  shift, and go to state 116
+    IDENT    shift, and go to state 72
+    INTEGER  shift, and go to state 73
+    CALL     shift, and go to state 50
+    ODD      shift, and go to state 74
+    '-'      shift, and go to state 75
+    '('      shift, and go to state 76
+
+    call_stmt    go to state 77
+    expr         go to state 116
+    simple_expr  go to state 79
 
 
 State 85
 
-   61 dowhile_stmt: DO get_code_addr . stmt_sequence ';' WHILE '(' expr ')'
+   61 dowhile_stmt: DO get_code_addr . stmt_sequence WHILE expr
 
     IDENT   shift, and go to state 45
     IF      shift, and go to state 46
@@ -1548,26 +1554,20 @@ State 115
 
 State 116
 
-   60 while_stmt: WHILE get_code_addr '(' . expr ')' get_code_addr $@7 DO MYBEGIN stmt_sequence ';' END
+   60 while_stmt: WHILE get_code_addr expr . get_code_addr $@7 DO MYBEGIN stmt_sequence END
 
-    IDENT    shift, and go to state 72
-    INTEGER  shift, and go to state 73
-    CALL     shift, and go to state 50
-    ODD      shift, and go to state 74
-    '-'      shift, and go to state 75
-    '('      shift, and go to state 76
+    $default  reduce using rule 6 (get_code_addr)
 
-    call_stmt    go to state 77
-    expr         go to state 141
-    simple_expr  go to state 79
+    get_code_addr  go to state 141
 
 
 State 117
 
    36 stmt_sequence: stmt_sequence . ';' statement
-   61 dowhile_stmt: DO get_code_addr stmt_sequence . ';' WHILE '(' expr ')'
+   61 dowhile_stmt: DO get_code_addr stmt_sequence . WHILE expr
 
-    ';'  shift, and go to state 142
+    WHILE  shift, and go to state 142
+    ';'    shift, and go to state 88
 
 
 State 118
@@ -1906,42 +1906,27 @@ State 140
 
 State 141
 
-   60 while_stmt: WHILE get_code_addr '(' expr . ')' get_code_addr $@7 DO MYBEGIN stmt_sequence ';' END
+   60 while_stmt: WHILE get_code_addr expr get_code_addr . $@7 DO MYBEGIN stmt_sequence END
 
-    ')'  shift, and go to state 153
+    $default  reduce using rule 59 ($@7)
+
+    $@7  go to state 153
 
 
 State 142
 
-   36 stmt_sequence: stmt_sequence ';' . statement
-   61 dowhile_stmt: DO get_code_addr stmt_sequence ';' . WHILE '(' expr ')'
+   61 dowhile_stmt: DO get_code_addr stmt_sequence WHILE . expr
 
-    IDENT   shift, and go to state 45
-    IF      shift, and go to state 46
-    REPEAT  shift, and go to state 47
-    READ    shift, and go to state 48
-    WRITE   shift, and go to state 49
-    CALL    shift, and go to state 50
-    WHILE   shift, and go to state 154
-    DO      shift, and go to state 52
-    FOR     shift, and go to state 53
+    IDENT    shift, and go to state 72
+    INTEGER  shift, and go to state 73
+    CALL     shift, and go to state 50
+    ODD      shift, and go to state 74
+    '-'      shift, and go to state 75
+    '('      shift, and go to state 76
 
-    $default  reduce using rule 26 ($@4)
-
-    return_stmt      go to state 54
-    $@4              go to state 55
-    statement        go to state 120
-    if_stmt          go to state 58
-    if_stmt_no_else  go to state 59
-    repeat_stmt      go to state 60
-    assign_stmt      go to state 61
-    read_stmt        go to state 62
-    write_stmt       go to state 63
-    while_stmt       go to state 64
-    dowhile_stmt     go to state 65
-    for_stmt         go to state 66
-    call_stmt        go to state 67
-    identifier       go to state 68
+    call_stmt    go to state 77
+    expr         go to state 154
+    simple_expr  go to state 79
 
 
 State 143
@@ -2108,23 +2093,16 @@ State 152
 
 State 153
 
-   60 while_stmt: WHILE get_code_addr '(' expr ')' . get_code_addr $@7 DO MYBEGIN stmt_sequence ';' END
+   60 while_stmt: WHILE get_code_addr expr get_code_addr $@7 . DO MYBEGIN stmt_sequence END
 
-    $default  reduce using rule 6 (get_code_addr)
-
-    get_code_addr  go to state 162
+    DO  shift, and go to state 162
 
 
 State 154
 
-   60 while_stmt: WHILE . get_code_addr '(' expr ')' get_code_addr $@7 DO MYBEGIN stmt_sequence ';' END
-   61 dowhile_stmt: DO get_code_addr stmt_sequence ';' WHILE . '(' expr ')'
+   61 dowhile_stmt: DO get_code_addr stmt_sequence WHILE expr .
 
-    '('  shift, and go to state 163
-
-    '('  [reduce using rule 6 (get_code_addr)]
-
-    get_code_addr  go to state 84
+    $default  reduce using rule 61 (dowhile_stmt)
 
 
 State 155
@@ -2139,7 +2117,7 @@ State 155
     '('      shift, and go to state 76
 
     call_stmt    go to state 77
-    expr         go to state 164
+    expr         go to state 163
     simple_expr  go to state 79
 
 
@@ -2148,7 +2126,7 @@ State 156
    36 stmt_sequence: stmt_sequence . ';' statement
    50 if_stmt: if_stmt_no_else get_code_addr $@5 ELSE stmt_sequence . ';' END
 
-    ';'  shift, and go to state 165
+    ';'  shift, and go to state 164
 
 
 State 157
@@ -2156,7 +2134,7 @@ State 157
    24 proc_decls: proc_decls proc_decl MYBEGIN const_decl var_decl $@3 stmt_sequence ';' return_stmt . END decrease_level
    46 statement: return_stmt .
 
-    END  shift, and go to state 166
+    END  shift, and go to state 165
 
     $default  reduce using rule 46 (statement)
 
@@ -2166,7 +2144,7 @@ State 158
    36 stmt_sequence: stmt_sequence . ';' statement
    52 if_stmt_no_else: IF expr get_code_addr @6 THEN stmt_sequence . ';'
 
-    ';'  shift, and go to state 167
+    ';'  shift, and go to state 166
 
 
 State 159
@@ -2195,52 +2173,34 @@ State 161
     '('      shift, and go to state 76
 
     call_stmt    go to state 77
-    expr         go to state 168
+    expr         go to state 167
     simple_expr  go to state 79
 
 
 State 162
 
-   60 while_stmt: WHILE get_code_addr '(' expr ')' get_code_addr . $@7 DO MYBEGIN stmt_sequence ';' END
+   60 while_stmt: WHILE get_code_addr expr get_code_addr $@7 DO . MYBEGIN stmt_sequence END
 
-    $default  reduce using rule 59 ($@7)
-
-    $@7  go to state 169
+    MYBEGIN  shift, and go to state 168
 
 
 State 163
-
-   61 dowhile_stmt: DO get_code_addr stmt_sequence ';' WHILE '(' . expr ')'
-
-    IDENT    shift, and go to state 72
-    INTEGER  shift, and go to state 73
-    CALL     shift, and go to state 50
-    ODD      shift, and go to state 74
-    '-'      shift, and go to state 75
-    '('      shift, and go to state 76
-
-    call_stmt    go to state 77
-    expr         go to state 170
-    simple_expr  go to state 79
-
-
-State 164
 
    64 for_stmt: FOR '(' assign_stmt ';' get_code_addr expr . get_code_addr $@8 ';' assign_stmt $@9 ')' get_code_addr MYBEGIN stmt_sequence ';' END get_code_addr
 
     $default  reduce using rule 6 (get_code_addr)
 
-    get_code_addr  go to state 171
+    get_code_addr  go to state 169
 
 
-State 165
+State 164
 
    36 stmt_sequence: stmt_sequence ';' . statement
    50 if_stmt: if_stmt_no_else get_code_addr $@5 ELSE stmt_sequence ';' . END
 
     IDENT   shift, and go to state 45
     IF      shift, and go to state 46
-    END     shift, and go to state 172
+    END     shift, and go to state 170
     REPEAT  shift, and go to state 47
     READ    shift, and go to state 48
     WRITE   shift, and go to state 49
@@ -2267,16 +2227,16 @@ State 165
     identifier       go to state 68
 
 
-State 166
+State 165
 
    24 proc_decls: proc_decls proc_decl MYBEGIN const_decl var_decl $@3 stmt_sequence ';' return_stmt END . decrease_level
 
     $default  reduce using rule 34 (decrease_level)
 
-    decrease_level  go to state 173
+    decrease_level  go to state 171
 
 
-State 167
+State 166
 
    36 stmt_sequence: stmt_sequence ';' . statement
    52 if_stmt_no_else: IF expr get_code_addr @6 THEN stmt_sequence ';' .
@@ -2310,74 +2270,16 @@ State 167
     identifier       go to state 68
 
 
-State 168
+State 167
 
    69 arg_stmt: arg_stmt ',' expr .
 
     $default  reduce using rule 69 (arg_stmt)
 
 
-State 169
+State 168
 
-   60 while_stmt: WHILE get_code_addr '(' expr ')' get_code_addr $@7 . DO MYBEGIN stmt_sequence ';' END
-
-    DO  shift, and go to state 174
-
-
-State 170
-
-   61 dowhile_stmt: DO get_code_addr stmt_sequence ';' WHILE '(' expr . ')'
-
-    ')'  shift, and go to state 175
-
-
-State 171
-
-   64 for_stmt: FOR '(' assign_stmt ';' get_code_addr expr get_code_addr . $@8 ';' assign_stmt $@9 ')' get_code_addr MYBEGIN stmt_sequence ';' END get_code_addr
-
-    $default  reduce using rule 62 ($@8)
-
-    $@8  go to state 176
-
-
-State 172
-
-   50 if_stmt: if_stmt_no_else get_code_addr $@5 ELSE stmt_sequence ';' END .
-
-    $default  reduce using rule 50 (if_stmt)
-
-
-State 173
-
-   24 proc_decls: proc_decls proc_decl MYBEGIN const_decl var_decl $@3 stmt_sequence ';' return_stmt END decrease_level .
-
-    $default  reduce using rule 24 (proc_decls)
-
-
-State 174
-
-   60 while_stmt: WHILE get_code_addr '(' expr ')' get_code_addr $@7 DO . MYBEGIN stmt_sequence ';' END
-
-    MYBEGIN  shift, and go to state 177
-
-
-State 175
-
-   61 dowhile_stmt: DO get_code_addr stmt_sequence ';' WHILE '(' expr ')' .
-
-    $default  reduce using rule 61 (dowhile_stmt)
-
-
-State 176
-
-   64 for_stmt: FOR '(' assign_stmt ';' get_code_addr expr get_code_addr $@8 . ';' assign_stmt $@9 ')' get_code_addr MYBEGIN stmt_sequence ';' END get_code_addr
-
-    ';'  shift, and go to state 178
-
-
-State 177
-
-   60 while_stmt: WHILE get_code_addr '(' expr ')' get_code_addr $@7 DO MYBEGIN . stmt_sequence ';' END
+   60 while_stmt: WHILE get_code_addr expr get_code_addr $@7 DO MYBEGIN . stmt_sequence END
 
     IDENT   shift, and go to state 45
     IF      shift, and go to state 46
@@ -2393,7 +2295,7 @@ State 177
 
     return_stmt      go to state 54
     $@4              go to state 55
-    stmt_sequence    go to state 179
+    stmt_sequence    go to state 172
     statement        go to state 57
     if_stmt          go to state 58
     if_stmt_no_else  go to state 59
@@ -2408,37 +2310,139 @@ State 177
     identifier       go to state 68
 
 
-State 178
+State 169
+
+   64 for_stmt: FOR '(' assign_stmt ';' get_code_addr expr get_code_addr . $@8 ';' assign_stmt $@9 ')' get_code_addr MYBEGIN stmt_sequence ';' END get_code_addr
+
+    $default  reduce using rule 62 ($@8)
+
+    $@8  go to state 173
+
+
+State 170
+
+   50 if_stmt: if_stmt_no_else get_code_addr $@5 ELSE stmt_sequence ';' END .
+
+    $default  reduce using rule 50 (if_stmt)
+
+
+State 171
+
+   24 proc_decls: proc_decls proc_decl MYBEGIN const_decl var_decl $@3 stmt_sequence ';' return_stmt END decrease_level .
+
+    $default  reduce using rule 24 (proc_decls)
+
+
+State 172
+
+   36 stmt_sequence: stmt_sequence . ';' statement
+   60 while_stmt: WHILE get_code_addr expr get_code_addr $@7 DO MYBEGIN stmt_sequence . END
+
+    END  shift, and go to state 174
+    ';'  shift, and go to state 88
+
+
+State 173
+
+   64 for_stmt: FOR '(' assign_stmt ';' get_code_addr expr get_code_addr $@8 . ';' assign_stmt $@9 ')' get_code_addr MYBEGIN stmt_sequence ';' END get_code_addr
+
+    ';'  shift, and go to state 175
+
+
+State 174
+
+   60 while_stmt: WHILE get_code_addr expr get_code_addr $@7 DO MYBEGIN stmt_sequence END .
+
+    $default  reduce using rule 60 (while_stmt)
+
+
+State 175
 
    64 for_stmt: FOR '(' assign_stmt ';' get_code_addr expr get_code_addr $@8 ';' . assign_stmt $@9 ')' get_code_addr MYBEGIN stmt_sequence ';' END get_code_addr
 
     IDENT  shift, and go to state 45
 
-    assign_stmt  go to state 180
+    assign_stmt  go to state 176
     identifier   go to state 68
 
 
-State 179
-
-   36 stmt_sequence: stmt_sequence . ';' statement
-   60 while_stmt: WHILE get_code_addr '(' expr ')' get_code_addr $@7 DO MYBEGIN stmt_sequence . ';' END
-
-    ';'  shift, and go to state 181
-
-
-State 180
+State 176
 
    64 for_stmt: FOR '(' assign_stmt ';' get_code_addr expr get_code_addr $@8 ';' assign_stmt . $@9 ')' get_code_addr MYBEGIN stmt_sequence ';' END get_code_addr
 
     $default  reduce using rule 63 ($@9)
 
-    $@9  go to state 182
+    $@9  go to state 177
+
+
+State 177
+
+   64 for_stmt: FOR '(' assign_stmt ';' get_code_addr expr get_code_addr $@8 ';' assign_stmt $@9 . ')' get_code_addr MYBEGIN stmt_sequence ';' END get_code_addr
+
+    ')'  shift, and go to state 178
+
+
+State 178
+
+   64 for_stmt: FOR '(' assign_stmt ';' get_code_addr expr get_code_addr $@8 ';' assign_stmt $@9 ')' . get_code_addr MYBEGIN stmt_sequence ';' END get_code_addr
+
+    $default  reduce using rule 6 (get_code_addr)
+
+    get_code_addr  go to state 179
+
+
+State 179
+
+   64 for_stmt: FOR '(' assign_stmt ';' get_code_addr expr get_code_addr $@8 ';' assign_stmt $@9 ')' get_code_addr . MYBEGIN stmt_sequence ';' END get_code_addr
+
+    MYBEGIN  shift, and go to state 180
+
+
+State 180
+
+   64 for_stmt: FOR '(' assign_stmt ';' get_code_addr expr get_code_addr $@8 ';' assign_stmt $@9 ')' get_code_addr MYBEGIN . stmt_sequence ';' END get_code_addr
+
+    IDENT   shift, and go to state 45
+    IF      shift, and go to state 46
+    REPEAT  shift, and go to state 47
+    READ    shift, and go to state 48
+    WRITE   shift, and go to state 49
+    CALL    shift, and go to state 50
+    WHILE   shift, and go to state 51
+    DO      shift, and go to state 52
+    FOR     shift, and go to state 53
+
+    $default  reduce using rule 26 ($@4)
+
+    return_stmt      go to state 54
+    $@4              go to state 55
+    stmt_sequence    go to state 181
+    statement        go to state 57
+    if_stmt          go to state 58
+    if_stmt_no_else  go to state 59
+    repeat_stmt      go to state 60
+    assign_stmt      go to state 61
+    read_stmt        go to state 62
+    write_stmt       go to state 63
+    while_stmt       go to state 64
+    dowhile_stmt     go to state 65
+    for_stmt         go to state 66
+    call_stmt        go to state 67
+    identifier       go to state 68
 
 
 State 181
 
+   36 stmt_sequence: stmt_sequence . ';' statement
+   64 for_stmt: FOR '(' assign_stmt ';' get_code_addr expr get_code_addr $@8 ';' assign_stmt $@9 ')' get_code_addr MYBEGIN stmt_sequence . ';' END get_code_addr
+
+    ';'  shift, and go to state 182
+
+
+State 182
+
    36 stmt_sequence: stmt_sequence ';' . statement
-   60 while_stmt: WHILE get_code_addr '(' expr ')' get_code_addr $@7 DO MYBEGIN stmt_sequence ';' . END
+   64 for_stmt: FOR '(' assign_stmt ';' get_code_addr expr get_code_addr $@8 ';' assign_stmt $@9 ')' get_code_addr MYBEGIN stmt_sequence ';' . END get_code_addr
 
     IDENT   shift, and go to state 45
     IF      shift, and go to state 46
@@ -2469,121 +2473,16 @@ State 181
     identifier       go to state 68
 
 
-State 182
-
-   64 for_stmt: FOR '(' assign_stmt ';' get_code_addr expr get_code_addr $@8 ';' assign_stmt $@9 . ')' get_code_addr MYBEGIN stmt_sequence ';' END get_code_addr
-
-    ')'  shift, and go to state 184
-
-
 State 183
-
-   60 while_stmt: WHILE get_code_addr '(' expr ')' get_code_addr $@7 DO MYBEGIN stmt_sequence ';' END .
-
-    $default  reduce using rule 60 (while_stmt)
-
-
-State 184
-
-   64 for_stmt: FOR '(' assign_stmt ';' get_code_addr expr get_code_addr $@8 ';' assign_stmt $@9 ')' . get_code_addr MYBEGIN stmt_sequence ';' END get_code_addr
-
-    $default  reduce using rule 6 (get_code_addr)
-
-    get_code_addr  go to state 185
-
-
-State 185
-
-   64 for_stmt: FOR '(' assign_stmt ';' get_code_addr expr get_code_addr $@8 ';' assign_stmt $@9 ')' get_code_addr . MYBEGIN stmt_sequence ';' END get_code_addr
-
-    MYBEGIN  shift, and go to state 186
-
-
-State 186
-
-   64 for_stmt: FOR '(' assign_stmt ';' get_code_addr expr get_code_addr $@8 ';' assign_stmt $@9 ')' get_code_addr MYBEGIN . stmt_sequence ';' END get_code_addr
-
-    IDENT   shift, and go to state 45
-    IF      shift, and go to state 46
-    REPEAT  shift, and go to state 47
-    READ    shift, and go to state 48
-    WRITE   shift, and go to state 49
-    CALL    shift, and go to state 50
-    WHILE   shift, and go to state 51
-    DO      shift, and go to state 52
-    FOR     shift, and go to state 53
-
-    $default  reduce using rule 26 ($@4)
-
-    return_stmt      go to state 54
-    $@4              go to state 55
-    stmt_sequence    go to state 187
-    statement        go to state 57
-    if_stmt          go to state 58
-    if_stmt_no_else  go to state 59
-    repeat_stmt      go to state 60
-    assign_stmt      go to state 61
-    read_stmt        go to state 62
-    write_stmt       go to state 63
-    while_stmt       go to state 64
-    dowhile_stmt     go to state 65
-    for_stmt         go to state 66
-    call_stmt        go to state 67
-    identifier       go to state 68
-
-
-State 187
-
-   36 stmt_sequence: stmt_sequence . ';' statement
-   64 for_stmt: FOR '(' assign_stmt ';' get_code_addr expr get_code_addr $@8 ';' assign_stmt $@9 ')' get_code_addr MYBEGIN stmt_sequence . ';' END get_code_addr
-
-    ';'  shift, and go to state 188
-
-
-State 188
-
-   36 stmt_sequence: stmt_sequence ';' . statement
-   64 for_stmt: FOR '(' assign_stmt ';' get_code_addr expr get_code_addr $@8 ';' assign_stmt $@9 ')' get_code_addr MYBEGIN stmt_sequence ';' . END get_code_addr
-
-    IDENT   shift, and go to state 45
-    IF      shift, and go to state 46
-    END     shift, and go to state 189
-    REPEAT  shift, and go to state 47
-    READ    shift, and go to state 48
-    WRITE   shift, and go to state 49
-    CALL    shift, and go to state 50
-    WHILE   shift, and go to state 51
-    DO      shift, and go to state 52
-    FOR     shift, and go to state 53
-
-    $default  reduce using rule 26 ($@4)
-
-    return_stmt      go to state 54
-    $@4              go to state 55
-    statement        go to state 120
-    if_stmt          go to state 58
-    if_stmt_no_else  go to state 59
-    repeat_stmt      go to state 60
-    assign_stmt      go to state 61
-    read_stmt        go to state 62
-    write_stmt       go to state 63
-    while_stmt       go to state 64
-    dowhile_stmt     go to state 65
-    for_stmt         go to state 66
-    call_stmt        go to state 67
-    identifier       go to state 68
-
-
-State 189
 
    64 for_stmt: FOR '(' assign_stmt ';' get_code_addr expr get_code_addr $@8 ';' assign_stmt $@9 ')' get_code_addr MYBEGIN stmt_sequence ';' END . get_code_addr
 
     $default  reduce using rule 6 (get_code_addr)
 
-    get_code_addr  go to state 190
+    get_code_addr  go to state 184
 
 
-State 190
+State 184
 
    64 for_stmt: FOR '(' assign_stmt ';' get_code_addr expr get_code_addr $@8 ';' assign_stmt $@9 ')' get_code_addr MYBEGIN stmt_sequence ';' END get_code_addr .
 

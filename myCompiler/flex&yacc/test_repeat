@@ -1,0 +1,9 @@
+var i, sum;
+sum:=0;
+i:=0;
+repeat
+  i++;
+  sum:=sum+i;
+  write i;
+until i>10;
+write sum

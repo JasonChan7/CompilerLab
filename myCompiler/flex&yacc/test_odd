@@ -1,0 +1,11 @@
+// test odd
+var i, sum;
+sum:=0;
+for (i:=0;i<10;i++)
+begin
+  if ODD i then
+  sum:=sum+i;
+  write i;
+  end;
+end;
+write sum
