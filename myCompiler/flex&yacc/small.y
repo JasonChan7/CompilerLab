@@ -240,7 +240,7 @@ proc_decl:
 				exit(1);
 			}
 			num = i;
-			procRecord[i].adr = $<integer>9;
+			procRecord[i].adr = $<integer>9-$<integer>5;
 		}
 		// setdx($<integer>5+3);
 		$<integer>$ = $<integer>5;
@@ -260,7 +260,7 @@ para_stmt:
 		if (globallocalswitch == 0) {
 			strcpy(id, $1);
 			enter(variable);
-			gen(get, 0, localRecord[localRecordPtr].adr); /* 存变量 */
+			gen(sto, lev, localRecord[localRecordPtr].adr); /* 存变量 */
 		}
 	}
 	| IDENT ',' para_stmt {
@@ -268,7 +268,7 @@ para_stmt:
 		if (globallocalswitch == 0) {
 			strcpy(id, $1);
 			enter(variable);
-			gen(get, 0, localRecord[localRecordPtr].adr); /* 存变量 */
+			gen(sto, lev, localRecord[localRecordPtr].adr); /* 存变量 */
 		}
 	}
 	;
@@ -299,6 +299,7 @@ statement:
 	| write_stmt
 	| while_stmt
 	| call_stmt
+	| return_stmt
 	;
 if_stmt:
 	if_stmt_no_else END {
@@ -442,41 +443,41 @@ arg_list:
 	}
 	;
 arg_stmt:
-	identifier {
+	expr {
 		$<integer>$ = 1;
-		if ($<integer>1 == 0) {
-			yyerror("undeclared variable");	/* 未声明标识符 */
-			exit(1);
-		}
-		int i = $<integer>1;
-		if (i%2 == 0) {
-			gen(put, 0, globalRecord[i/2].adr); /* 取变量 */
-		}
-		else {
-			gen(put, 1, localRecord[(i-1)/2].adr); /* 取变量 */
-		}
+		// if ($<integer>1 == 0) {
+		// 	yyerror("undeclared variable");	/* 未声明标识符 */
+		// 	exit(1);
+		// }
+		// int i = $<integer>1;
+		// if (i%2 == 0) {
+		// 	gen(put, 0, globalRecord[i/2].adr); /* 取变量 */
+		// }
+		// else {
+		// 	gen(put, 1, localRecord[(i-1)/2].adr); /* 取变量 */
+		// }
 	}
-	| arg_stmt ',' identifier {
+	| arg_stmt ',' expr {
 		$<integer>$ = $<integer>1+1;
-		if ($<integer>3 == 0) {
-			yyerror("undeclared variable");	/* 未声明标识符 */
-			exit(1);
-		}
-		int i = $<integer>3;
-		if (i%2 == 0) {
-			if (globalRecord[i/2].kind != variable) {
-				yyerror("is not a variable");	/* 标识符是过程 */
-				exit(1);
-			}
-			gen(put, 0, globalRecord[i/2].adr); /* 取变量 */
-		}
-		else {
-			if (localRecord[(i-1)/2].kind != variable) {
-				yyerror("is not a variable");	/* 标识符是过程 */
-				exit(1);
-			}
-			gen(put, 1, localRecord[(i-1)/2].adr); /* 取变量 */
-		}
+		// if ($<integer>3 == 0) {
+		// 	yyerror("undeclared variable");	/* 未声明标识符 */
+		// 	exit(1);
+		// }
+		// int i = $<integer>3;
+		// if (i%2 == 0) {
+		// 	if (globalRecord[i/2].kind != variable) {
+		// 		yyerror("is not a variable");	/* 标识符是过程 */
+		// 		exit(1);
+		// 	}
+		// 	gen(put, 0, globalRecord[i/2].adr); /* 取变量 */
+		// }
+		// else {
+		// 	if (localRecord[(i-1)/2].kind != variable) {
+		// 		yyerror("is not a variable");	/* 标识符是过程 */
+		// 		exit(1);
+		// 	}
+		// 	gen(put, 1, localRecord[(i-1)/2].adr); /* 取变量 */
+		// }
 	}
 	;
 
@@ -782,11 +783,14 @@ void displaytable() {
 }
 void outputStack(int cnt, int *s, int t) {
 	printf("%d:=================================\n", cnt);
+	fprintf(ftable, "%d:=================================\n", cnt);
 	int i;
 	for(i = 0; i <= t; i++) {
 		printf("%d: %d\n", i, s[i]);
+		fprintf(ftable, "%d: %d\n", i, s[i]);
 	}
 	printf("==================================\n");
+	fprintf(ftable, "=================================\n");
 }
 void interpret()
 {
@@ -905,14 +909,14 @@ void interpret()
 				t = t - 1;
 				break;
 			case cal:	/* 调用子过程 */
+				printf("b:%d, t:%d, i.l:%d\n", b, t, i.l);
+				if (i.l != argtmpPtr) yyerror("wrong arguments number");
 				s[t + 1] = 0;	/* 将父过程基地址入栈，即建立静态链 */
 				s[t + 2] = b;	/* 将本过程基地址入栈，即建立动态链 */
 				s[t + 3] = p;	/* 将当前指令指针入栈，即保存返回地址 */
-				b = t+1;	/* 改变基地址指针值为新过程的基地址 */
-				printf("b:%d, t:%d, i.l:%d\n", b, t, i.l);
-				if (i.l != argtmpPtr) yyerror("wrong arguments number");
-				argPtr = i.l;
-				p = procRecord[i.a].adr-i.l;	/* 跳转 */
+				b = t+1-procRecord[i.a].size;	/* 改变基地址指针值为新过程的基地址 */
+				argPtr = procRecord[i.a].size;
+				p = procRecord[i.a].adr;	/* 跳转 */
 				break;
 			case ret:
 				s[s[b+1]] = s[t];
@@ -932,7 +936,10 @@ void interpret()
 				localRecord[i.a].val = s[t+3+argPtr-argtmpPtr];
 				break;
 			case ini:	/* 在数据栈中为被调用的过程开辟a个单元的数据区 */
-				t = t + i.a;	
+				s[t+1] = s[t+1+argPtr];
+				s[t+2] = s[t+2+argPtr];
+				s[t+3] = s[t+3+argPtr];
+				t = b + i.a;	
 				break;
 			case jmp:	/* 直接跳转 */
 				p = i.a;

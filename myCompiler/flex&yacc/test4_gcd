@@ -1,23 +1,20 @@
 begin
-    def gcd();
+    def gcd(a, b);
 end
 const a:=84,b:=36;
 var x,y,z,q,r;
-def gcd;
+def gcd(a, b);
   begin
-    var f,g;
-    f:=x; g:=y;
-    while (f!=g) do 
-      begin 
-        if f<g then g:=g-f; end;
-        if g<f then f:=f-g; end;
-      end;
-    z:=f;
-  end;
+    var ans;
+    if b==0 then ans:=a;
+    else ans:=call gcd(b, a%b); end;
+    return ans;
+  end
 
-begin
-   x:=a; y:=b; call gcd
-end.
+x:=a; 
+y:=b; 
+z:=call gcd(x, y);
+write z
 
 
 
