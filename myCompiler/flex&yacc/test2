@@ -1,21 +1,16 @@
-const a:=10, b:=20;
-var c, d;
-def test(m, n);
-    begin
-        const A:=99, b:=100;
-        var x, y;
-        write A;
-        write b;
-        x:=m;
-        y:=n;
-        m:=A;
-        n:=b;
-        write x;
-        write y
+const a:=10;
+var b, c;
+def p(b);
+    begin    
+        var c;
+        c:=b+a;
+        return c;
     end
-c:=b;
-d:=a;
-call test(c, d);
-write c;
-write d
 
+read b;
+while (b!=0) do
+begin
+    c := call p(b);
+    write 2*c;
+    read b;
+end

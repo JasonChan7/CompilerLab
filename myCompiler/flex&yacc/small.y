@@ -80,7 +80,7 @@
 	int localRecordPtr = 0;
 	bool globallocalswitch = 1;	/* 1表示全局变量，0表示局部变量 */
 	bool procDeclFinished = 0;	/* 1表示结束，0表示未结束 */
-	int argPtr = 1;
+	int argPtr = 0;
 
 	FILE* fin;      /* 输入源文件 */
 	FILE* ftable;	/* 输出符号表 */
@@ -237,15 +237,13 @@ para_stmt:
 		$<integer>$ = 1;
 		strcpy(id, $1);
 		enter(variable);
-		gen(get, argPtr, localRecord[localRecordPtr].adr); /* 存变量 */
-		argPtr--;
+		gen(get, 0, localRecord[localRecordPtr].adr); /* 存变量 */
 	}
 	| IDENT ',' para_stmt {
 		$<integer>$ = $<integer>3+1;
 		strcpy(id, $1);
 		enter(variable);
-		gen(get, argPtr, localRecord[localRecordPtr].adr); /* 存变量 */
-		argPtr--;
+		gen(get, 0, localRecord[localRecordPtr].adr); /* 存变量 */
 	}
 	;
 increase_procRecord: {
@@ -281,7 +279,7 @@ if_stmt:
 	| if_stmt_no_else get_code_addr {
 		gen(jmp, 0, 0);
 		code[$<integer>1].a = codeTablePoint;
-	} ELSE stmt_sequence END {
+	} ELSE stmt_sequence ';' END {
 		code[$<integer>2].a = codeTablePoint;
 	}
 	;
@@ -289,10 +287,10 @@ if_stmt_no_else:
 	IF expr get_code_addr {
 		gen(jpc, 0, 0);
 		$<integer>$ = $<integer>3;
-	} THEN stmt_sequence
+	} THEN stmt_sequence ';'
 	;
 repeat_stmt:
-	REPEAT get_code_addr stmt_sequence UNTIL expr {
+	REPEAT get_code_addr stmt_sequence ';' UNTIL expr {
 		gen(jpc, 0, $<integer>2);
 	}
 	;
@@ -372,7 +370,7 @@ write_stmt:
 while_stmt:
 	WHILE get_code_addr '(' expr ')' get_code_addr {
 		gen(jpc, 0, 0);
-	} DO MYBEGIN stmt_sequence END {
+	} DO MYBEGIN stmt_sequence ';' END {
 		gen(jmp, 0, $<integer>2);
 		code[$<integer>6].a = codeTablePoint;
 	}
@@ -383,22 +381,18 @@ call_stmt:
 			yyerror("undeclared procedure");	/* 未声明过程 */
 			exit(1);
 		}
-		else if (procRecord[$<integer>3].size != argPtr) {
-			printf("agrPtr: %d\n", argPtr);
+		else if (procRecord[$<integer>3].size != $<integer>5) {
 			yyerror("wrong arguments");	/* 参数列表错误 */
 			exit(1);
 		}
-		gen(cal, argPtr, procRecord[$<integer>3].adr-argPtr);
+		gen(cal, $<integer>5, procRecord[$<integer>3].adr-$<integer>5);
 	}
 	;
 arg_list:
-	{
-		argPtr = 0;
-	} arg_stmt {
+	arg_stmt {
 		$<integer>$ = $<integer>1;
 	}
 	| {
-		argPtr = 0;
 		$<integer>$ = 0;
 	}
 	;
@@ -410,20 +404,10 @@ arg_stmt:
 			exit(1);
 		}
 		if (globallocalswitch == 1) {
-			if (globalRecord[$<integer>1].kind != variable) {
-				yyerror("is not a variable");	/* 标识符是过程 */
-				exit(1);
-			}
-			argPtr++;
-			gen(put, argPtr*2, globalRecord[$<integer>1].adr); /* 取变量 */
+			gen(put, 0, globalRecord[$<integer>1].adr); /* 取变量 */
 		}
 		else {
-			if (localRecord[$<integer>1].kind != variable) {
-				yyerror("is not a variable");	/* 标识符是过程 */
-				exit(1);
-			}
-			argPtr++;
-			gen(put, argPtr*2+1, localRecord[$<integer>1].adr); /* 取变量 */
+			gen(put, 1, localRecord[$<integer>1].adr); /* 取变量 */
 		}
 	}
 	| arg_stmt ',' identifier {
@@ -437,16 +421,14 @@ arg_stmt:
 				yyerror("is not a variable");	/* 标识符是过程 */
 				exit(1);
 			}
-			argPtr++;
-			gen(put, argPtr*2, globalRecord[$<integer>3].adr); /* 取变量 */
+			gen(put, 0, globalRecord[$<integer>3].adr); /* 取变量 */
 		}
 		else {
 			if (localRecord[$<integer>3].kind != variable) {
 				yyerror("is not a variable");	/* 标识符是过程 */
 				exit(1);
 			}
-			argPtr++;
-			gen(put, argPtr*2+1, localRecord[$<integer>3].adr); /* 取变量 */
+			gen(put, 1, localRecord[$<integer>3].adr); /* 取变量 */
 		}
 	}
 	;
@@ -707,6 +689,7 @@ void displaytable() {
 	int i;
 	if (tableswitch) {
 		printf("==================Procedure Table================\n");
+		fprintf(ftable, "==================Procedure Table================\n");
 		for (i = 1; i <= procRecordPtr; i++) {
 			printf("    %d proc  %s ", i, procRecord[i].name);
 			printf("lev=%d addr=%d size=%d\n", procRecord[i].level, procRecord[i].adr, procRecord[i].size);
@@ -714,6 +697,7 @@ void displaytable() {
 			fprintf(ftable,"lev=%d addr=%d size=%d\n", procRecord[i].level, procRecord[i].adr, procRecord[i].size);
 		}
 		printf("==================Global Table================\n");
+		fprintf(ftable, "==================Global Table================\n");
 		for (i = 1; i <= globalRecordPtr; i++) {
 			switch(globalRecord[i].kind) {
 				case constant:
@@ -731,6 +715,7 @@ void displaytable() {
 			}
 		}
 		printf("==================Local Table================\n");
+		fprintf(ftable, "==================Local Table================\n");
 		for (i = 1; i <= localRecordPtr; i++) {
 			switch(localRecord[i].kind) {
 				case constant:
@@ -764,6 +749,7 @@ void interpret()
 	int p = 0; /* 指令指针 */
 	int b = 1; /* 指令基址 */
 	int t = 0; /* 栈顶指针 */
+	int argtmpPtr = 0;
 	struct instruction i;	/* 存放当前指令 */
 	int s[stacksize];	/* 栈 */
 
@@ -880,6 +866,8 @@ void interpret()
 				s[t + 3] = p;	/* 将当前指令指针入栈，即保存返回地址 */
 				b = t+1;	/* 改变基地址指针值为新过程的基地址 */
 				printf("b:%d, t:%d, i.l:%d\n", b, t, i.l);
+				if (i.l != argtmpPtr) yyerror("wrong arguments number");
+				argPtr = i.l;
 				p = i.a;	/* 跳转 */
 				break;
 			case ret:
@@ -891,12 +879,13 @@ void interpret()
 				else localRecord[i.a].val = s[b];
 				break;
 			case put:
-				if (i.l%2 == 0) s[t+3+i.l/2] = globalRecord[i.a].val;
-				else s[t+3+(i.l-1)/2] = localRecord[i.a].val;
+				argtmpPtr++;
+				if (i.l == 0) s[t+3+argtmpPtr] = globalRecord[i.a].val;
+				else s[t+3+argtmpPtr] = localRecord[i.a].val;
 				break;
 			case get:
-				printf("t=%d, i.l=%d\n", t, i.l);
-				localRecord[i.a].val = s[t+3+i.l+1];
+				argtmpPtr--;
+				localRecord[i.a].val = s[t+3+argPtr-argtmpPtr];
 				break;
 			case ini:	/* 在数据栈中为被调用的过程开辟a个单元的数据区 */
 				t = t + i.a;	
