@@ -1,22 +1,13 @@
-    1 proc   lev=0 addr=19 size=0
-    2 proc  test lev=1 addr=1 size=0
+    1 proc   lev=0 addr=14 size=0
+    2 proc  testadd lev=1 addr=3 size=2
     1 const a val=10
     2 const b val=20
     3 var   c lev=0 addr=3
     4 var   d lev=0 addr=4
-    1 const A val=99
-    2 const b val=100
-    3 var   x lev=1 addr=6
-    4 var   y lev=1 addr=7
-
-    1 proc   lev=0 addr=19 size=0
-    2 proc  test lev=1 addr=1 size=0
-    1 const a val=10
-    2 const b val=20
-    3 var   c lev=0 addr=3
-    4 var   d lev=0 addr=4
-    1 const A val=99
-    2 const b val=100
-    3 var   x lev=1 addr=6
-    4 var   y lev=1 addr=7
+    5 var   e lev=0 addr=5
+    1 var   y lev=1 addr=1
+    2 var   x lev=1 addr=2
+    3 const A val=99
+    4 const b val=100
+    5 var   c lev=1 addr=5
 

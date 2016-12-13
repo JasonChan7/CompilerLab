@@ -1,17 +1,16 @@
 const a:=10, b:=20;
-var c, d;
-def test();
+var c, d, e;
+def testadd(x, y);
     begin
         const A:=99, b:=100;
-        var x, y;
-        write A;
-        write b;
-        x:=99;
-        y:=100;
-        write x;
-        write y
+        var c;
+        c:=x+y;        
+        write c;
+        return c;
     end
-
-call test();
+c:=a;
+d:=b;
+e:=call testadd(c, d);
 write c;
-write d
+write d;
+write e

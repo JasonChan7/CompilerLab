@@ -15,7 +15,7 @@
 	#define al 10         /* 标识符的最大长度 */
 	// #define maxerr 30     /* ??允许的最多错误数 */
 	#define amax 2048     /* 地址上界 */
-	#define levmax 3      /* 最大允许过程嵌套声明层数 */
+	#define levmax 10      /* 最大允许过程嵌套声明层数 */
 	#define codeTablePointmax 200     /* 最多的虚拟机代码数 */
 	#define stacksize 500 /* 运行时数据栈元素最多为500个 */
 	#define paraTableMax 200
@@ -47,9 +47,10 @@
 	enum fct {
 		lit,     opr,     lod, 
 		sto,     cal,     ini, 
-		jmp,     jpc,     
+		jmp,     jpc,     ret,
+		res,     put,     get,
 	};
-	#define fctnum 8
+	#define fctnum 12
 
 	/* 虚拟机代码结构 */
 	struct instruction
@@ -79,6 +80,7 @@
 	int localRecordPtr = 0;
 	bool globallocalswitch = 1;	/* 1表示全局变量，0表示局部变量 */
 	bool procDeclFinished = 0;	/* 1表示结束，0表示未结束 */
+	int argPtr = 1;
 
 	FILE* fin;      /* 输入源文件 */
 	FILE* ftable;	/* 输出符号表 */
@@ -106,7 +108,7 @@
 }
 %token <ident> IDENT
 %token <integer> INTEGER
-%token IF THEN ELSE END REPEAT UNTIL READ WRITE CALL CONST VAR MYBEGIN XOR ODD PROC WHILE DO
+%token IF THEN ELSE END REPEAT UNTIL READ WRITE CALL CONST VAR MYBEGIN XOR ODD PROC WHILE DO RET
 %nonassoc IFX
 %nonassoc ELSE
 %token BC GT LT GE LE EQ NE
@@ -115,7 +117,7 @@
 %left XOR
 %left ODD
 %nonassoc UMINUS
-%type <integer> get_code_addr /* 记录本层标识符的初始位置 */
+%type <integer> get_code_addr get_table_addr /* 记录本层标识符的初始位置 */
 %%
 program: 
 	get_code_addr {
@@ -131,7 +133,8 @@ program:
 		procRecord[1].adr = codeTablePoint;
 		displaytable();
 		procDeclFinished = 1;
-		gen(ini, 0, $<integer>3+3);
+		printf("fk: %d\n", $<integer>3);
+		gen(ini, 0, 3);
 	} stmt_sequence {
 		gen(opr, 0, 0);
 	}
@@ -139,6 +142,9 @@ program:
 
 get_code_addr: {
 	$<integer>$ = codeTablePoint; 
+};
+get_table_addr: {
+	$<integer>$ = localRecordPtr;
 };
 const_decl: 
 	CONST const_list ';' {
@@ -167,9 +173,9 @@ const_def:
 var_decl: 
 	VAR var_list ';' {
 		$<integer>$ = $<integer>2;
-		if (globallocalswitch == 0) {
-			setdx($<integer>2+3);
-		}
+		// if (globallocalswitch == 0) {
+		// 	setdx($<integer>2+3);
+		// }
 	}
 	| {
 		$<integer>$ = 0;
@@ -177,10 +183,10 @@ var_decl:
 	;
 var_list:
 	var_def {
-		$<integer>$ = 1;
+		$<integer>$ = $<integer>1;
 	}
 	| var_list ',' var_def {
-		$<integer>$ = $<integer>1+1;
+		$<integer>$ = $<integer>1+$<integer>3;
 	}
 	;
 var_def:
@@ -193,13 +199,18 @@ var_def:
 	;
 proc_decls: 
 	proc_decls proc_decl MYBEGIN const_decl var_decl {
-		gen(ini, 0, $<integer>2+$<integer>5+3);
-	} stmt_sequence END decrease_level {
+		gen(ini, 0, $<integer>2+3);
+	} stmt_sequence ';' return_stmt END decrease_level {
 		$<integer>$ = $<integer>1+1;
 		gen(opr, 0, 0);
 	}
 	| {
 		$<integer>$ = 0;
+	}
+	;
+return_stmt:
+	RET expr ';' {
+		gen(ret, 0, 0);
 	}
 	;
 proc_decl: 
@@ -209,6 +220,7 @@ proc_decl:
 			num = $<integer>5;
 			enter(procedure);
 		}
+		// setdx($<integer>5+3);
 		$<integer>$ = $<integer>5;
 	}
 	;
@@ -225,13 +237,15 @@ para_stmt:
 		$<integer>$ = 1;
 		strcpy(id, $1);
 		enter(variable);
-		gen(sto, lev-table[symbolTablePoint].level, table[symbolTablePoint].adr); /* 存变量 */
+		gen(get, argPtr, localRecord[localRecordPtr].adr); /* 存变量 */
+		argPtr--;
 	}
-	| para_stmt ',' IDENT {
-		$<integer>$ = $<integer>1+1;
-		strcpy(id, $3);
+	| IDENT ',' para_stmt {
+		$<integer>$ = $<integer>3+1;
+		strcpy(id, $1);
 		enter(variable);
-		gen(sto, lev-table[symbolTablePoint].level, table[symbolTablePoint].adr); /* 存变量 */
+		gen(get, argPtr, localRecord[localRecordPtr].adr); /* 存变量 */
+		argPtr--;
 	}
 	;
 increase_procRecord: {
@@ -290,17 +304,37 @@ assign_stmt:
 		}
 		if (globallocalswitch == 1) {
 			if (globalRecord[$<integer>1].kind != variable) {
-				yyerror("is not a variable");	/* 标识符是过程 */
+				yyerror("is not a variable");	/* 标识符是非变量 */
 				exit(1);
 			}
 			gen(sto, 0, globalRecord[$<integer>1].adr); /* 存变量 */
 		}
 		else {
 			if (localRecord[$<integer>1].kind != variable) {
-				yyerror("is not a variable");	/* 标识符是过程 */
+				yyerror("is not a variable");	/* 标识符是非变量 */
 				exit(1);
 			}
 			gen(sto, lev, localRecord[$<integer>1].adr); /* 存变量 */
+		}
+	}
+	| identifier BC call_stmt {
+		if ($<integer>1 == 0) {
+			yyerror("undeclared variable");	/* 未声明标识符 */
+			exit(1);
+		}
+		if (globallocalswitch == 1) {
+			if (globalRecord[$<integer>1].kind != variable) {
+				yyerror("is not a variable");	/* 标识符是非变量 */
+				exit(1);
+			}
+			gen(res, 0, globalRecord[$<integer>1].adr); /* 存变量 */
+		}
+		else {
+			if (localRecord[$<integer>1].kind != variable) {
+				yyerror("is not a variable");	/* 标识符是非变量 */
+				exit(1);
+			}
+			gen(res, lev, localRecord[$<integer>1].adr); /* 存变量 */
 		}
 	}
 	;
@@ -344,23 +378,27 @@ while_stmt:
 	}
 	;
 call_stmt:
-	CALL proc_identifier '(' arg_list ')' {
-		if ($<integer>2 == 0) {
+	CALL get_table_addr proc_identifier '(' arg_list ')' {
+		if ($<integer>3 == 0) {
 			yyerror("undeclared procedure");	/* 未声明过程 */
 			exit(1);
 		}
-		else if (procRecord[$<integer>2].size != $<integer>4) {
+		else if (procRecord[$<integer>3].size != argPtr) {
+			printf("agrPtr: %d\n", argPtr);
 			yyerror("wrong arguments");	/* 参数列表错误 */
 			exit(1);
 		}
-		gen(cal, 0, procRecord[$<integer>2].adr);
+		gen(cal, argPtr, procRecord[$<integer>3].adr-argPtr);
 	}
 	;
 arg_list:
-	arg_stmt {
+	{
+		argPtr = 0;
+	} arg_stmt {
 		$<integer>$ = $<integer>1;
 	}
 	| {
+		argPtr = 0;
 		$<integer>$ = 0;
 	}
 	;
@@ -376,14 +414,16 @@ arg_stmt:
 				yyerror("is not a variable");	/* 标识符是过程 */
 				exit(1);
 			}
-			gen(lod, 0, globalRecord[$<integer>1].adr); /* 取变量 */
+			argPtr++;
+			gen(put, argPtr*2, globalRecord[$<integer>1].adr); /* 取变量 */
 		}
 		else {
 			if (localRecord[$<integer>1].kind != variable) {
 				yyerror("is not a variable");	/* 标识符是过程 */
 				exit(1);
 			}
-			gen(lod, lev, localRecord[$<integer>1].adr); /* 取变量 */
+			argPtr++;
+			gen(put, argPtr*2+1, localRecord[$<integer>1].adr); /* 取变量 */
 		}
 	}
 	| arg_stmt ',' identifier {
@@ -397,14 +437,16 @@ arg_stmt:
 				yyerror("is not a variable");	/* 标识符是过程 */
 				exit(1);
 			}
-			gen(lod, 0, globalRecord[$<integer>3].adr); /* 取变量 */
+			argPtr++;
+			gen(put, argPtr*2, globalRecord[$<integer>3].adr); /* 取变量 */
 		}
 		else {
 			if (localRecord[$<integer>3].kind != variable) {
 				yyerror("is not a variable");	/* 标识符是过程 */
 				exit(1);
 			}
-			gen(lod, lev, localRecord[$<integer>3].adr); /* 取变量 */
+			argPtr++;
+			gen(put, argPtr*2+1, localRecord[$<integer>3].adr); /* 取变量 */
 		}
 	}
 	;
@@ -573,6 +615,7 @@ void enter(enum object k) {
 				localRecord[localRecordPtr].kind = k;	
 				localRecord[localRecordPtr].val = 0; /* 变量默认初始值为0 */
 				localRecord[localRecordPtr].level = lev;
+				localRecord[localRecordPtr].adr = localRecordPtr;
 				break;
 			case procedure:	/* 过程 */
 				procRecordPtr++;
@@ -651,7 +694,7 @@ void gen(enum fct x, int y, int z) {
 void listall() {
 	int i;
 	char name[][5] = {
-		{"lit"}, {"opr"}, {"lod"}, {"sto"}, {"cal"}, {"int"}, {"jmp"}, {"jpc"},
+		{"lit"}, {"opr"}, {"lod"}, {"sto"}, {"cal"}, {"int"}, {"jmp"}, {"jpc"}, {"ret"}, {"res"}, {"put"}, {"get"},
 	};
 	if (listswitch) {
 		for (i = 0; i < codeTablePoint; i++) {
@@ -835,8 +878,25 @@ void interpret()
 				s[t + 1] = 0;	/* 将父过程基地址入栈，即建立静态链 */
 				s[t + 2] = b;	/* 将本过程基地址入栈，即建立动态链 */
 				s[t + 3] = p;	/* 将当前指令指针入栈，即保存返回地址 */
-				b = t + 1;	/* 改变基地址指针值为新过程的基地址 */
+				b = t+1;	/* 改变基地址指针值为新过程的基地址 */
+				printf("b:%d, t:%d, i.l:%d\n", b, t, i.l);
 				p = i.a;	/* 跳转 */
+				break;
+			case ret:
+				s[s[b+1]] = s[t];
+				t = t-1;
+				break;
+			case res:
+				if (i.l == 0) globalRecord[i.a].val = s[b];
+				else localRecord[i.a].val = s[b];
+				break;
+			case put:
+				if (i.l%2 == 0) s[t+3+i.l/2] = globalRecord[i.a].val;
+				else s[t+3+(i.l-1)/2] = localRecord[i.a].val;
+				break;
+			case get:
+				printf("t=%d, i.l=%d\n", t, i.l);
+				localRecord[i.a].val = s[t+3+i.l+1];
 				break;
 			case ini:	/* 在数据栈中为被调用的过程开辟a个单元的数据区 */
 				t = t + i.a;	

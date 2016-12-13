@@ -64,15 +64,16 @@ extern int yydebug;
     PROC = 274,
     WHILE = 275,
     DO = 276,
-    IFX = 277,
-    BC = 278,
-    GT = 279,
-    LT = 280,
-    GE = 281,
-    LE = 282,
-    EQ = 283,
-    NE = 284,
-    UMINUS = 285
+    RET = 277,
+    IFX = 278,
+    BC = 279,
+    GT = 280,
+    LT = 281,
+    GE = 282,
+    LE = 283,
+    EQ = 284,
+    NE = 285,
+    UMINUS = 286
   };
 #endif
 
@@ -81,12 +82,12 @@ extern int yydebug;
 typedef union YYSTYPE YYSTYPE;
 union YYSTYPE
 {
-#line 103 "small.y" /* yacc.c:1909  */
+#line 105 "small.y" /* yacc.c:1909  */
 
 	int integer; /* integer value */ 
 	char *ident; /* identifier */ 
 
-#line 90 "small.tab.h" /* yacc.c:1909  */
+#line 91 "small.tab.h" /* yacc.c:1909  */
 };
 # define YYSTYPE_IS_TRIVIAL 1
 # define YYSTYPE_IS_DECLARED 1

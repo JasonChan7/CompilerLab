@@ -43,6 +43,7 @@ int yyerror(char *);
 "def"       return PROC;
 "while"     return WHILE;
 "do"        return DO;
+"return"    return RET;
  /* recognize identifier */
 [A-Za-z]([A-Za-z]|[0-9])* {
     yylval.ident = (char*)malloc(strlen(yytext)+1);
