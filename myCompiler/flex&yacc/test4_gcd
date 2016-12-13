@@ -1,5 +1,5 @@
 begin
-    def gcd(a, b);
+  def gcd(a, b);
 end
 const a:=84,b:=36;
 var x,y,z,q,r;

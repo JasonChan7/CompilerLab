@@ -209,7 +209,7 @@ var_def:
 	;
 proc_decls: 
 	proc_decls proc_decl MYBEGIN const_decl var_decl {
-		gen(ini, 0, $<integer>2+3);
+		gen(ini, 0, 3);
 	} stmt_sequence ';' return_stmt END decrease_level {
 		$<integer>$ = $<integer>1+1;
 		gen(opr, 0, 0);
@@ -357,27 +357,27 @@ assign_stmt:
 			gen(sto, lev, localRecord[(i-1)/2].adr); /* 存变量 */
 		}
 	}
-	| identifier BC call_stmt {
-		if ($<integer>1 == 0) {
-			yyerror("undeclared variable");	/* 未声明标识符 */
-			exit(1);
-		}
-		int i = $<integer>1;
-		if (i%2 == 0) {
-			if (globalRecord[i/2].kind != variable) {
-				yyerror("is not a variable");	/* 标识符是非变量 */
-				exit(1);
-			}
-			gen(res, 0, globalRecord[i/2].adr); /* 存变量 */
-		}
-		else {
-			if (localRecord[(i-1)/2].kind != variable) {
-				yyerror("is not a variable");	/* 标识符是非变量 */
-				exit(1);
-			}
-			gen(res, lev, localRecord[(i-1)/2].adr); /* 存变量 */
-		}
-	}
+	// | identifier BC call_stmt {
+	// 	if ($<integer>1 == 0) {
+	// 		yyerror("undeclared variable");	/* 未声明标识符 */
+	// 		exit(1);
+	// 	}
+	// 	int i = $<integer>1;
+	// 	if (i%2 == 0) {
+	// 		if (globalRecord[i/2].kind != variable) {
+	// 			yyerror("is not a variable");	/* 标识符是非变量 */
+	// 			exit(1);
+	// 		}
+	// 		gen(res, 0, globalRecord[i/2].adr); /* 存变量 */
+	// 	}
+	// 	else {
+	// 		if (localRecord[(i-1)/2].kind != variable) {
+	// 			yyerror("is not a variable");	/* 标识符是非变量 */
+	// 			exit(1);
+	// 		}
+	// 		gen(res, lev, localRecord[(i-1)/2].adr); /* 存变量 */
+	// 	}
+	// }
 	;
 read_stmt:
 	READ identifier {
@@ -553,6 +553,9 @@ simple_expr:
 	| '(' expr ')' {
 		$<integer>$ = $<integer>2;
 		fprintf(stdout, "%d\n", $<integer>$);
+	}
+	| call_stmt {
+		gen(get, 0, 0); /* 获取返回值 */
 	}
 	| INTEGER {
 		gen(lit, 0, $<integer>1);
@@ -932,14 +935,14 @@ void interpret()
 				else s[t+3+argtmpPtr] = localRecord[i.a].val;
 				break;
 			case get:
-				argtmpPtr--;
-				localRecord[i.a].val = s[t+3+argPtr-argtmpPtr];
+			    t = t+1;
+				s[t] = s[b];
 				break;
 			case ini:	/* 在数据栈中为被调用的过程开辟a个单元的数据区 */
 				s[t+1] = s[t+1+argPtr];
 				s[t+2] = s[t+2+argPtr];
 				s[t+3] = s[t+3+argPtr];
-				t = b + i.a;	
+				t = t+3;	
 				break;
 			case jmp:	/* 直接跳转 */
 				p = i.a;

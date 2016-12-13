@@ -7,7 +7,7 @@ def gcd(a, b);
   begin
     var ans;
     if b==0 then ans:=a;
-    else ans:=call gcd(b, a%b); end
+    else ans:=call gcd(b, a%b); end;
     return ans;
   end
 

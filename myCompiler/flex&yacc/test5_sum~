@@ -1,0 +1,16 @@
+begin
+  def psum(a);
+end
+var m, sum;
+def psum(a);
+  begin
+    var tmp;
+    tmp:=0;
+    if a>0 then tmp:=a+call psum(a-1); end;
+    return tmp;
+  end
+
+m:=10;
+sum:=0;
+sum:=call psum(m);
+write sum
