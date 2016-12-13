@@ -1,0 +1,14 @@
+const h:=30,f:=90;
+var cock,rabbit;
+
+cock := 1;
+while (cock < h) do
+ begin
+   rabbit := h - cock;
+   if (cock * 2 + rabbit * 4) == f 
+   then 
+       write cock;
+       write rabbit;
+   end;
+   cock := cock + 1;
+ end

@@ -5,7 +5,7 @@ var m,fact;
 def factorial(a);
   begin
     if a>0 then
-      fact:=fact*a;
+      fact:=fact*m;
       call factorial(a-1);
     end;
     return fact;

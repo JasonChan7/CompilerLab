@@ -1,0 +1,17 @@
+begin
+  def plus(a, b, c);
+end
+const m:=7;n=85
+var x;y,z,
+procedure plus(a, b, c);
+begin
+  a=x;
+  b:=y
+  c:=a+b;
+end;
+
+x:=m
+y:=n
+call a
+call plvs
+z:=c;

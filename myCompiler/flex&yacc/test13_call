@@ -1,0 +1,35 @@
+begin
+  def p();
+  def q();
+  def r();
+  def s();
+end
+var a;
+def p();
+begin
+  call q();
+  return 0;
+end
+
+def q();
+begin
+  call r();  
+  return 0;
+end
+
+def r();
+begin
+  a:=a-1;
+  if a>0 then call p(); end;
+  return 0;
+end
+
+def s();
+begin 
+  call p();
+  return 0;
+end
+
+a:=3;
+call s()
+   

@@ -123,7 +123,7 @@ program:
 	get_code_addr {
 		gen(jmp, 0, 0);
 	} open_globallocalswitch
-	MYBEGIN proc_predecls END
+	my_proc_predecls
   	const_decl
   	var_decl
 	close_globallocalswitch
@@ -139,7 +139,10 @@ program:
 		gen(opr, 0, 0);
 	}
 	;
-
+my_proc_predecls: 
+	MYBEGIN proc_predecls END
+	|
+	;
 get_code_addr: {
 	$<integer>$ = codeTablePoint; 
 };

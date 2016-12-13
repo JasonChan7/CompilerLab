@@ -1,7 +1,7 @@
 begin
   def factorial(a);
 end
-var m,fact;
+var n,m,fact,sum;
 def factorial(a);
   begin
     if a>0 then
@@ -11,7 +11,15 @@ def factorial(a);
     return fact;
   end
 
-m:=6;
-fact:=1;
-call factorial(m);
-write fact
+n:=4;
+sum:=0;
+while (n>0) do
+begin
+  m:=n;
+  fact:=1;
+  call factorial(m);
+  sum:=sum+fact;
+  n:=n-1;
+end;
+write sum;
+end.

@@ -1,0 +1,11 @@
+begin
+  def q();
+end
+
+def q();
+begin
+  return 0;
+end
+
+write 0
+

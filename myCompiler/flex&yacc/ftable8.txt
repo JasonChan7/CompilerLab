@@ -1,0 +1,7 @@
+==================Procedure Table================
+    1 proc  plus lev=1 addr=1 size=3
+    2 proc  ___main__ lev=0 addr=1 size=0
+==================Global Table================
+    1 const m val=7
+==================Local Table================
+
