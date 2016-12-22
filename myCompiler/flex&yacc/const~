@@ -1,0 +1,8 @@
+const n:=5;
+var x,s;
+read x;
+s:=1;
+repeat
+  s:=s+x;
+  x:=x+1
+until x==n;

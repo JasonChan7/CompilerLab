@@ -1,0 +1,5 @@
+const n:=5;
+read x;
+s:=1;
+repeat s:=s+x;x:=x+1 until x==n;
+write s

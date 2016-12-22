@@ -1,7 +1,7 @@
 begin
   def gcd(a, b);
 end
-const a:=10,b:=17;
+const a:=84,b:=36;
 var x,y,z,q,r;
 def gcd(a, b);
   begin
@@ -15,4 +15,3 @@ x:=a;
 y:=b; 
 z:=call gcd(x, y);
 write z
-

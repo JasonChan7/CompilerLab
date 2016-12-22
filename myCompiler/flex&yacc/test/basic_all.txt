@@ -1,0 +1,27 @@
+read x;
+read y;
+write y*((x+y))-x;
+
+read y;
+if y<10 then
+ if y>0 then  write 1
+ else write 0-1 
+ end
+end; 
+
+
+if y<5 then 
+   repeat y:=y+2 until y>5 ;
+   write y 
+end;
+
+
+i:=1;
+repeat 
+    i:=i+1;
+    write i;
+    j:=1;
+    repeat j:=j+1;
+           write j 
+    until j==5 
+ until i==5

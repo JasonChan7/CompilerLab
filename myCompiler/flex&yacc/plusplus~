@@ -1,0 +1,8 @@
+var x, y;
+read x;
+x++;
+write x;
+write (x++)*(x++);
+
+write (x--)-1;
+write -1+(x--)

@@ -1,0 +1,28 @@
+begin
+  def isPrime(i);
+end
+var a, i;
+def isPrime(i);
+  begin
+    var j;
+    j:=2;
+    while (j < i) do 
+    begin
+        if i%j == 0 then
+          i:=0;
+        end;
+        j:=j+1
+    end;
+    if i!=0 then i:=1; end;
+    return i;
+  end
+
+read a;
+i:=2;
+while i <= a do
+begin
+  if call isPrime(i) then 
+      write i;
+  end;
+  i:=i+1
+end

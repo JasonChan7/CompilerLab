@@ -1,0 +1,7 @@
+==================Procedure Table================
+    1 proc  ___main__ lev=0 addr=1 size=0
+==================Global Table================
+    1 var   i lev=0 addr=1
+    2 var   sum lev=0 addr=2
+==================Local Table================
+

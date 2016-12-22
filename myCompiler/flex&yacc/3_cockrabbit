@@ -10,5 +10,5 @@ while (cock < h) do
        write cock;
        write rabbit;
    end;
-   cock := cock + 1;
+   cock := cock + 1
  end

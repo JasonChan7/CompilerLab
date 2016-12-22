@@ -333,7 +333,7 @@ if_stmt_no_else:
 	}
 	;
 repeat_stmt:
-	REPEAT get_code_addr stmt_sequence ';' UNTIL expr {
+	REPEAT get_code_addr stmt_sequence UNTIL expr {
 		gen(jpc, 0, $<integer>2);
 	}
 	;
@@ -354,6 +354,7 @@ assign_stmt:
 			}
 			printf("337:globalRecord[i/2].name:%s\n", globalRecord[i/2].name);
 			gen(sto, 0, globalRecord[i/2].adr); /* 存变量 */
+			$<integer>$ = $<integer>1;
 		}
 		else {
 			if (localRecord[(i-1)/2].kind != variable) {
@@ -361,7 +362,70 @@ assign_stmt:
 				exit(1);
 			}
 			gen(sto, lev, localRecord[(i-1)/2].adr); /* 存变量 */
+			$<integer>$ = $<integer>1;
 		}
+	}
+	| INC identifier {
+		if ($<integer>2 == 0) {
+			yyerror("undeclared variable");	/* 未声明标识符 */
+			exit(1);
+		}
+		printf("371: reco INC!\n");
+		int i = $<integer>2;
+		if (i%2 == 0) {
+			if (globalRecord[i/2].kind != variable) {
+				yyerror("is not a variable");	/* 标识符是非变量 */
+				exit(1);
+			}
+			gen(lod, 0, globalRecord[i/2].adr);
+			gen(lit, 0, 1);
+			gen(opr, 0, 2);
+			gen(sto, 0, globalRecord[i/2].adr); /* 存变量 */
+			gen(lod, 0, globalRecord[i/2].adr);
+		}
+		else {
+			if (localRecord[(i-1)/2].kind != variable) {
+				yyerror("is not a variable");	/* 标识符是非变量 */
+				exit(1);
+			}
+			gen(lod, 0, localRecord[(i-1)/2].adr);
+			gen(lit, 0, 1);
+			gen(opr, 0, 2);
+			gen(sto, lev, localRecord[(i-1)/2].adr); /* 存变量 */
+			gen(lod, 0, localRecord[(i-1)/2].adr);
+		}
+		$<integer>$ = $<integer>2;
+	}
+	| DEC identifier {
+		if ($<integer>2 == 0) {
+			yyerror("undeclared variable");	/* 未声明标识符 */
+			exit(1);
+		}
+		printf("399: reco DEC!\n");
+		int i = $<integer>2;
+		if (i%2 == 0) {
+			if (globalRecord[i/2].kind != variable) {
+				yyerror("is not a variable");	/* 标识符是非变量 */
+				exit(1);
+			}
+			gen(lod, 0, globalRecord[i/2].adr);
+			gen(lit, 0, 1);
+			gen(opr, 0, 3);
+			gen(sto, 0, globalRecord[i/2].adr); /* 存变量 */
+			gen(lod, 0, globalRecord[i/2].adr);
+		}
+		else {
+			if (localRecord[(i-1)/2].kind != variable) {
+				yyerror("is not a variable");	/* 标识符是非变量 */
+				exit(1);
+			}
+			gen(lod, 0, localRecord[(i-1)/2].adr);
+			gen(lit, 0, 1);
+			gen(opr, 0, 3);
+			gen(sto, lev, localRecord[(i-1)/2].adr); /* 存变量 */
+			gen(lod, 0, localRecord[(i-1)/2].adr);
+		}
+		$<integer>$ = $<integer>1;
 	}
 	| identifier INC {
 		if ($<integer>1 == 0) {
@@ -370,11 +434,13 @@ assign_stmt:
 		}
 		printf("371: reco INC!\n");
 		int i = $<integer>1;
+		printf("437:%d\n", i);
 		if (i%2 == 0) {
 			if (globalRecord[i/2].kind != variable) {
 				yyerror("is not a variable");	/* 标识符是非变量 */
 				exit(1);
 			}
+			gen(lod, 0, globalRecord[i/2].adr);
 			gen(lod, 0, globalRecord[i/2].adr);
 			gen(lit, 0, 1);
 			gen(opr, 0, 2);
@@ -386,10 +452,12 @@ assign_stmt:
 				exit(1);
 			}
 			gen(lod, 0, localRecord[(i-1)/2].adr);
+			gen(lod, 0, localRecord[(i-1)/2].adr);
 			gen(lit, 0, 1);
-			gen(opr, 0, 3);
+			gen(opr, 0, 2);
 			gen(sto, lev, localRecord[(i-1)/2].adr); /* 存变量 */
 		}
+		$<integer>$ = $<integer>2;
 	}
 	| identifier DEC {
 		if ($<integer>1 == 0) {
@@ -404,7 +472,9 @@ assign_stmt:
 				exit(1);
 			}
 			gen(lod, 0, globalRecord[i/2].adr);
+			gen(lod, 0, globalRecord[i/2].adr);
 			gen(lit, 0, 1);
+			gen(opr, 0, 3);
 			gen(sto, 0, globalRecord[i/2].adr); /* 存变量 */
 		}
 		else {
@@ -413,9 +483,12 @@ assign_stmt:
 				exit(1);
 			}
 			gen(lod, 0, localRecord[(i-1)/2].adr);
+			gen(lod, 0, localRecord[(i-1)/2].adr);
 			gen(lit, 0, 1);
+			gen(opr, 0, 3);
 			gen(sto, lev, localRecord[(i-1)/2].adr); /* 存变量 */
 		}
+		$<integer>$ = $<integer>1;
 	}
 	// | identifier BC call_stmt {
 	// 	if ($<integer>1 == 0) {
@@ -467,6 +540,7 @@ read_stmt:
 	;
 write_stmt:
 	WRITE expr {
+		printf("line:%d\n", line);
 		gen(opr, 0, 14); /* 写操作 */
 		gen(opr, 0, 15);
 		$<integer>$ = $<integer>2;
@@ -639,6 +713,7 @@ simple_expr:
 	| call_stmt {
 		gen(get, 0, 0); /* 获取返回值 */
 	}
+	| '(' assign_stmt ')' 
 	| INTEGER {
 		gen(lit, 0, $<integer>1);
 		$<integer>$ = $<integer>1;
@@ -995,7 +1070,7 @@ void interpret()
 				break;
 			case cal:	/* 调用子过程 */
 				printf("b:%d, t:%d, i.l:%d\n", b, t, i.l);
-				if (i.l != argtmpPtr) yyerror("wrong arguments number");
+				// if (i.l != argtmpPtr) yyerror("wrong arguments number");
 				s[t + 1] = 0;	/* 将父过程基地址入栈，即建立静态链 */
 				s[t + 2] = b;	/* 将本过程基地址入栈，即建立动态链 */
 				s[t + 3] = p;	/* 将当前指令指针入栈，即保存返回地址 */
@@ -1012,9 +1087,8 @@ void interpret()
 				else localRecord[i.a].val = s[b];
 				break;
 			case put:
-				argtmpPtr++;
-				if (i.l == 0) s[t+3+argtmpPtr] = globalRecord[i.a].val;
-				else s[t+3+argtmpPtr] = localRecord[i.a].val;
+			    t = t+1;
+				s[t]=i.a;
 				break;
 			case get:
 			    t = t+1;

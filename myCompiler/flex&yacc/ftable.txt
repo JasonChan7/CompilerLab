@@ -1,0 +1,10 @@
+==================Procedure Table================
+    1 proc  isPrime lev=1 addr=1 size=1
+    2 proc  ___main__ lev=0 addr=31 size=0
+==================Global Table================
+    1 var   a lev=0 addr=1
+    2 var   i lev=0 addr=2
+==================Local Table================
+    1 var   i lev=1 addr=1
+    2 var   j lev=1 addr=2
+

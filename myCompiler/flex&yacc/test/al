@@ -1,0 +1,10 @@
+const n:=5;
+var x, s;
+read x;
+s:=1;
+repeat
+  x++;
+  s:=s+x
+until x==n;
+write s;
+write ODD s
